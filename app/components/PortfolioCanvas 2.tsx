@@ -1044,7 +1044,7 @@ export default function PortfolioCanvas() {
           )}
           {aiMessages.map((msg, i) => (
             <div key={i} className={`ai-msg-row ${msg.role}`}>
-              <div className={`ai-bubble ${msg.role}`}>{msg.text}</div>
+              <div className={`ai-bubble ${msg.role}`}>{msg.text} </div>
             </div>
           ))}
           {aiLoading && (
