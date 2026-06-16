@@ -443,7 +443,7 @@ html, body {
   background: #FFFFFF;
   box-shadow: 1px 2px 10px rgba(0,0,0,0.08);
   border-radius: 8px;
-  padding: 10px 10px 44px 10px;
+  padding: 12px;
   transform: rotate(-10deg);
   z-index: 10;
   transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease;
@@ -464,12 +464,22 @@ html, body {
 }
 #polaroid-caption {
   font-family: var(--font-space-grotesk), sans-serif;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 400;
   color: #0A0A0A;
-  opacity: 0.6;
-  text-align: center;
-  margin-top: 8px;
+  opacity: 0.85;
+  text-align: left;
+  line-height: 1;
+  /* 12px gap above (photo → text); the polaroid's 12px bottom padding gives the
+     matching 12px gap below (text → bottom edge). */
+  margin-top: 12px;
+}
+#polaroid-caption .polaroid-arrow {
+  font-size: 20px;
+  /* line-height:0 keeps the caption line box tight to the 16px text so the
+     12px gaps above/below stay even; the larger glyph still renders. */
+  line-height: 0;
+  vertical-align: -2px;
 }
 
 /* Good Problems sticker */
@@ -479,13 +489,13 @@ html, body {
   top: calc(50% - 260px);
   transform: rotate(6deg);
   display: block;
-  width: 280px;
+  width: 320px;
   text-decoration: none;
   will-change: transform;
   z-index: 10;
   transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
 }
-#good-problems-sticker img { width: 280px; height: auto; display: block; }
+#good-problems-sticker img { width: 320px; height: auto; display: block; }
 #good-problems-sticker:hover { transform: rotate(3deg) scale(1.04); }
 
 /* Contact sticker */
@@ -583,12 +593,13 @@ html, body {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   background: rgba(0,0,0,0.15);
   z-index: 999;
   opacity: 0;
-  pointer-events: none;
+  /* Capture pointer events while a panel is open so the canvas beneath is not
+     hoverable/clickable, and clicking the dimmed area closes the panel. The
+     overlay is display:none when closed, so the canvas is interactive then. */
+  pointer-events: auto;
   transition: opacity 0.3s ease;
   display: none;
 }
@@ -641,6 +652,96 @@ html, body {
   margin-top: 28px;
 }
 #gp-shuffle:hover { background: rgba(0,0,0,0.04); }
+
+/* Contact Panel */
+#contact-panel {
+  position: fixed;
+  top: 0; right: 0;
+  width: clamp(460px, 39vw, 600px);
+  height: 100vh;
+  background: #F5F2EC;
+  border-left: 1px solid rgba(0,0,0,0.08);
+  box-shadow: -8px 0 32px rgba(0,0,0,0.08);
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 40px 36px;
+  transform: translateX(100%);
+}
+#contact-close {
+  position: absolute;
+  top: 24px; right: 28px;
+  background: none;
+  border: none;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #0A0A0A;
+  opacity: 0.4;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+#contact-close:hover { opacity: 0.8; }
+.contact-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.contact-row:hover { background: #FBFAF7; border-color: rgba(0,0,0,0.16); }
+.contact-row-label {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #0A0A0A;
+  opacity: 0.35;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.contact-row-value {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #0A0A0A;
+}
+.contact-connect-label {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #0A0A0A;
+  opacity: 0.35;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+.contact-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.contact-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0A0A0A;
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 100px;
+  padding: 8px 16px 8px 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.contact-social img { width: 18px; height: 18px; display: block; flex-shrink: 0; }
+.contact-social:hover { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.3); }
 
 /* Ask AI button */
 #ask-ai-btn {

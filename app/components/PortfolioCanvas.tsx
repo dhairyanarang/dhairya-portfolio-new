@@ -136,8 +136,8 @@ export default function PortfolioCanvas() {
   const toolTipRef      = useRef<HTMLDivElement>(null)
   const dockTipRef      = useRef<HTMLDivElement>(null)
   const canvasResetRef  = useRef<HTMLButtonElement>(null)
-  const gpBackdropRef   = useRef<HTMLDivElement>(null)
-  const aiBackdropRef   = useRef<HTMLDivElement>(null)
+  const activePanelRef  = useRef<'gp' | 'ai' | 'contact' | null>(null)
+  const contactPanelRef = useRef<HTMLDivElement>(null)
   const fixedTopRightRef = useRef<HTMLDivElement>(null)
 
   const [clockText, setClockText] = useState('')
@@ -493,6 +493,7 @@ export default function PortfolioCanvas() {
       polaroid.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
       Draggable.create(polaroid, {
         type: 'x,y', inertia: true,
+        onPress() { polDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); polDragDist = 0; polStartX = this.x; polStartY = this.y; gsap.to(polaroid, { rotation: -3, duration: 0.2 }) },
         onDrag() {
           polDragDist = Math.sqrt(Math.pow(this.x - polStartX, 2) + Math.pow(this.y - polStartY, 2))
@@ -531,6 +532,7 @@ export default function PortfolioCanvas() {
       let deckDragDist = 0, deckStartX = 0, deckStartY = 0
       Draggable.create(deck, {
         type: 'x,y', inertia: true,
+        onPress() { deckDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); anyDragActiveRef.current = true; deckDragDist = 0; deckStartX = this.x; deckStartY = this.y; gsap.to(deck, { rotation: 3, duration: 0.2 }) },
         onDrag() {
           deckDragDist = Math.sqrt(Math.pow(this.x - deckStartX, 2) + Math.pow(this.y - deckStartY, 2))
@@ -550,6 +552,7 @@ export default function PortfolioCanvas() {
       c.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
       Draggable.create(c, {
         type: 'x,y', inertia: true,
+        onPress() { cDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); cDragDist = 0; cStartX = this.x; cStartY = this.y; gsap.to(c, { rotation: 5, duration: 0.2 }) },
         onDrag() {
           cDragDist = Math.sqrt(Math.pow(this.x - cStartX, 2) + Math.pow(this.y - cStartY, 2))
@@ -557,7 +560,7 @@ export default function PortfolioCanvas() {
         },
         onDragEnd() { Draggable.get(canvas)?.enable(); gsap.to(c, { rotation: 10, duration: 0.4, ease: 'elastic.out(1,0.6)' }) }
       })
-      c.addEventListener('click', e => { if (cDragDist > 5) e.preventDefault() })
+      c.addEventListener('click', (e) => { e.preventDefault(); if (cDragDist <= 5) openContactPanel() })
     }
 
     // ── GP sticker draggable ──
@@ -569,6 +572,7 @@ export default function PortfolioCanvas() {
       gp.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
       Draggable.create(gp, {
         type: 'x,y', inertia: true,
+        onPress() { gpDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); gpDragDist = 0; gpStartX = this.x; gpStartY = this.y; gsap.to(gp, { rotation: 2, duration: 0.2 }) },
         onDrag() {
           gpDragDist = Math.sqrt(Math.pow(this.x - gpStartX, 2) + Math.pow(this.y - gpStartY, 2))
@@ -582,6 +586,8 @@ export default function PortfolioCanvas() {
     // ── GP Panel ──
     const openGpPanel = () => {
       panelIsOpenRef.current = true
+      activePanelRef.current = 'gp'
+      setCursorLabel('You')
       Draggable.get(canvas)?.disable()
       shuffleGpOrder()
       setGpOpen(true)
@@ -595,6 +601,7 @@ export default function PortfolioCanvas() {
 
     const closeGpPanel = () => {
       panelIsOpenRef.current = false
+      activePanelRef.current = null
       Draggable.get(canvas)?.enable()
       setGpOpen(false)
       const overlay = blurOverlayRef.current, panel = gpPanelRef.current
@@ -605,16 +612,14 @@ export default function PortfolioCanvas() {
         .set(overlay, { display: 'none' })
     }
 
-    const gpBackdrop = gpBackdropRef.current
-    if (gpBackdrop) {
-      gpBackdrop.addEventListener('click', closeGpPanel)
-    }
     // Store closeGpPanel on window so buttons can call it
     ;(window as any).__closeGpPanel = closeGpPanel
 
     // ── AI Panel ──
     const openAiPanel = () => {
       panelIsOpenRef.current = true
+      activePanelRef.current = 'ai'
+      setCursorLabel('You')
       Draggable.get(canvas)?.disable()
       setAiOpen(true)
       const overlay = blurOverlayRef.current, panel = aiPanelRef.current
@@ -629,6 +634,7 @@ export default function PortfolioCanvas() {
 
     const closeAiPanel = () => {
       panelIsOpenRef.current = false
+      activePanelRef.current = null
       Draggable.get(canvas)?.enable()
       setAiOpen(false)
       const overlay = blurOverlayRef.current, panel = aiPanelRef.current
@@ -639,10 +645,49 @@ export default function PortfolioCanvas() {
         .set(overlay, { display: 'none' })
     }
 
-    const aiBackdrop = aiBackdropRef.current
-    if (aiBackdrop) aiBackdrop.addEventListener('click', closeAiPanel)
     ;(window as any).__openAiPanel = openAiPanel
     ;(window as any).__closeAiPanel = closeAiPanel
+
+    // ── Contact Panel ──
+    const openContactPanel = () => {
+      panelIsOpenRef.current = true
+      activePanelRef.current = 'contact'
+      setCursorLabel('You')
+      Draggable.get(canvas)?.disable()
+      const overlay = blurOverlayRef.current, panel = contactPanelRef.current
+      if (!overlay || !panel) return
+      gsap.set(panel, { x: '100%' })
+      gsap.timeline()
+        .set(overlay, { opacity: 0, display: 'block' })
+        .to(overlay, { opacity: 1, duration: 0.2, ease: 'power2.out' }, 0)
+        .to(panel, { x: 0, duration: 0.5, ease: 'power3.out' }, 0.05)
+    }
+
+    const closeContactPanel = () => {
+      panelIsOpenRef.current = false
+      activePanelRef.current = null
+      Draggable.get(canvas)?.enable()
+      const overlay = blurOverlayRef.current, panel = contactPanelRef.current
+      if (!overlay || !panel) return
+      gsap.timeline()
+        .to(panel, { x: '100%', duration: 0.4, ease: 'power3.in' }, 0)
+        .to(overlay, { opacity: 0, duration: 0.25, ease: 'power2.in' }, 0.1)
+        .set(overlay, { display: 'none' })
+    }
+    ;(window as any).__openContactPanel = openContactPanel
+    ;(window as any).__closeContactPanel = closeContactPanel
+
+    // Clicking the dimmed overlay (anywhere outside the panel) closes the open
+    // panel. The overlay also captures pointer events while visible, so canvas
+    // elements beneath it are not hoverable/clickable. It is display:none when
+    // no panel is open, so the canvas stays fully interactive then.
+    const overlayEl = blurOverlayRef.current
+    const handleOverlayClick = () => {
+      if (activePanelRef.current === 'gp') closeGpPanel()
+      else if (activePanelRef.current === 'ai') closeAiPanel()
+      else if (activePanelRef.current === 'contact') closeContactPanel()
+    }
+    if (overlayEl) overlayEl.addEventListener('click', handleOverlayClick)
 
     // ── Scroll / pinch zoom ──
     const SCALE_MIN = 0.6, SCALE_MAX = 1.4, SCALE_STEP = 0.02
@@ -764,6 +809,7 @@ export default function PortfolioCanvas() {
 
       document.removeEventListener('wheel', handleWheel)
       document.removeEventListener('mousemove', handleMouseMove)
+      if (overlayEl) overlayEl.removeEventListener('click', handleOverlayClick)
 
       // Cancel any in-flight ghost-cursor sequence (its pending delayedCalls
       // bail out when the generation counter changes) and stop its typing timers.
@@ -796,6 +842,7 @@ export default function PortfolioCanvas() {
   // ── Close handlers ────────────────────────────────────────────────────────
   const handleCloseGp = () => { ;(window as any).__closeGpPanel?.() }
   const handleCloseAi = () => { ;(window as any).__closeAiPanel?.() }
+  const handleCloseContact = () => { ;(window as any).__closeContactPanel?.() }
   const handleOpenAi  = () => { ;(window as any).__openAiPanel?.() }
 
   const handleAiReset = () => {
@@ -853,13 +900,17 @@ export default function PortfolioCanvas() {
         </div>
 
         {/* Polaroid */}
-        <a id="polaroid" ref={polaroidRef} href="/about" aria-label="About Me">
+        <a id="polaroid" ref={polaroidRef} href="/about" aria-label="About Me"
+           onMouseEnter={() => setCursorLabel('My Story')}
+           onMouseLeave={() => setCursorLabel('You')}>
           <Image id="polaroid-photo" src="/dhairya-photo.png" alt="Dhairya Narang" width={220} height={220} style={{ borderRadius: 2, display: 'block', objectFit: 'cover' }} />
-          <div id="polaroid-caption">About me →</div>
+          <div id="polaroid-caption">About me <span className="polaroid-arrow">→</span></div>
         </a>
 
         {/* Project Deck */}
-        <div id="project-deck" ref={projectDeckRef}>
+        <div id="project-deck" ref={projectDeckRef}
+             onMouseEnter={() => setCursorLabel('View Work')}
+             onMouseLeave={() => setCursorLabel('You')}>
           <div className="deck-wrapper">
             <div className="project-card" id="deck-card-4" ref={deckCard4Ref as React.RefObject<HTMLDivElement>}>
               <div className="card-image">
@@ -930,7 +981,7 @@ export default function PortfolioCanvas() {
              onMouseEnter={() => setCursorLabel('Good Problems')}
              onMouseLeave={() => setCursorLabel('You')}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/good-problems-trigger.png" alt="Good Problems" width={280} style={{ height: 'auto', display: 'block' }} />
+          <img src="/good-problems-trigger.png" alt="Good Problems" width={320} style={{ height: 'auto', display: 'block' }} />
         </div>
       </div>
 
@@ -1006,10 +1057,8 @@ export default function PortfolioCanvas() {
       </div>
       <div id="dock-tip" className="dock-tooltip" ref={dockTipRef} />
 
-      {/* ── Blur overlay ──────────────────────────────────────────────────── */}
+      {/* ── Blur overlay (click-outside-to-close + blocks canvas interaction) ── */}
       <div id="blur-overlay" ref={blurOverlayRef} />
-      <div id="gp-backdrop" ref={gpBackdropRef} style={{ position: 'fixed', inset: 0, zIndex: 999, pointerEvents: 'none' }} />
-      <div id="ai-backdrop" ref={aiBackdropRef} style={{ position: 'fixed', inset: 0, zIndex: 999, pointerEvents: 'none' }} />
 
       {/* ── GP Panel ──────────────────────────────────────────────────────── */}
       <div id="gp-panel" ref={gpPanelRef} role="dialog" aria-label="Good Problems" aria-modal="true">
@@ -1032,6 +1081,43 @@ export default function PortfolioCanvas() {
         </div>
         <hr className="gp-divider" />
         <button id="gp-shuffle" onClick={handleGpShuffle}>↻ Another one</button>
+      </div>
+
+      {/* ── Contact Panel ─────────────────────────────────────────────────── */}
+      <div id="contact-panel" ref={contactPanelRef} role="dialog" aria-label="Contact" aria-modal="true">
+        <button id="contact-close" onClick={handleCloseContact} aria-label="Close">✕</button>
+        <div className="gp-eyebrow">Contact</div>
+        <div className="gp-title">Let&apos;s talk.</div>
+        <div className="gp-intro">Got a project, a question, or just want to say hi? Reach out.</div>
+        <hr className="gp-divider" />
+
+        <a className="contact-row" href="mailto:dhairyanarang077@gmail.com">
+          <span className="contact-row-label">Email</span>
+          <span className="contact-row-value">dhairyanarang077@gmail.com</span>
+        </a>
+        <a className="contact-row" href="tel:+919729577391">
+          <span className="contact-row-label">Phone</span>
+          <span className="contact-row-value">97295-77391</span>
+        </a>
+
+        <div className="contact-connect-label">Connect on</div>
+        <div className="contact-socials">
+          <a className="contact-social" href="https://www.linkedin.com/in/dhairya-narang/" target="_blank" rel="noopener noreferrer">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/linkedin.svg" alt="" aria-hidden="true" width={18} height={18} />
+            LinkedIn
+          </a>
+          <a className="contact-social" href="https://www.behance.net/dhairyanarang36" target="_blank" rel="noopener noreferrer">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/behance.svg" alt="" aria-hidden="true" width={18} height={18} />
+            Behance
+          </a>
+          <a className="contact-social" href="https://www.instagram.com/dhairya.svg/" target="_blank" rel="noopener noreferrer">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/instagram.svg" alt="" aria-hidden="true" width={18} height={18} />
+            Instagram
+          </a>
+        </div>
       </div>
 
       {/* ── Ask AI Button ─────────────────────────────────────────────────── */}
