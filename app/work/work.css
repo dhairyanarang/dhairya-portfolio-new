@@ -1,0 +1,197 @@
+/* ── Projects (Selected Work) page ──────────────────────────────────────────
+   Scoped under .work-page. The home route sets the document to overflow:hidden
+   and cursor:none for its canvas; override those only while this page is shown. */
+
+html:has(.work-page),
+body:has(.work-page) {
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  height: auto !important;
+  background: #ffffff;
+}
+
+.work-page,
+.work-page * { cursor: auto !important; }
+.work-page a,
+.work-page button { cursor: pointer !important; }
+
+.work-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+  color: #0a0a0a;
+  font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+  overflow: hidden;
+}
+
+/* centered content rail → 1232px content at desktop, 140px gutters at 1512 */
+.work-wrap {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+/* Back */
+.work-back {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #000000;
+  text-decoration: none;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.work-back:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); transform: translateY(-1px); }
+.work-back img { display: block; }
+
+/* Header */
+.work-header {
+  padding-top: 150px;
+}
+.work-title {
+  margin: 0;
+  font-size: 100px;
+  font-weight: 700;
+  line-height: 1;
+  color: #0a0a0a;
+}
+.work-subtitle {
+  margin: 16px 0 0;
+  font-size: 20px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Grid */
+.work-grid {
+  margin-top: 56px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 40px;
+}
+
+/* Entrance animation lives on the wrapper; hover transform on the card itself,
+   so the two transforms never fight (a finished `forwards` animation would
+   otherwise lock the card's transform and block the hover lift). */
+.work-card-wrap {
+  opacity: 0;
+  animation: work-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.work-card-wrap:nth-child(1) { animation-delay: 0.05s; }
+.work-card-wrap:nth-child(2) { animation-delay: 0.15s; }
+.work-card-wrap:nth-child(3) { animation-delay: 0.25s; }
+.work-card-wrap:nth-child(4) { animation-delay: 0.35s; }
+
+@keyframes work-rise {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.work-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  padding-bottom: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.3s ease;
+}
+.work-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.16);
+}
+.work-card-media {
+  width: 100%;
+  height: 360px;
+  overflow: hidden;
+}
+.work-card-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.work-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-inline: 20px;
+}
+.work-card-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  color: #0a0a0a;
+}
+.work-card-desc {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Footer (matches the About page CTA footer) */
+.work-footer {
+  margin-top: 120px;
+  padding-bottom: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+.work-cta {
+  margin: 0;
+  max-width: 629px;
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0a0a0a;
+}
+.work-cta-ghost { color: rgba(0, 0, 0, 0.18); }
+.work-contact { display: flex; gap: 32px; align-items: center; }
+.work-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.6);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+.work-contact-item:hover { color: #0a0a0a; }
+.work-contact-item img { display: block; flex-shrink: 0; width: 24px; height: 24px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .work-card-wrap { opacity: 1; animation: none; }
+  .work-card { transition: none; }
+}
+
+/* ── Responsive fallback (design is desktop-first) ────────────────────────── */
+@media (max-width: 1000px) {
+  .work-header { padding-top: 110px; }
+  .work-title { font-size: 60px; }
+  .work-grid { grid-template-columns: 1fr; gap: 28px; margin-top: 40px; }
+  .work-card-media { height: 300px; }
+  .work-footer { flex-direction: column; align-items: flex-start; gap: 28px; margin-top: 80px; padding-bottom: 64px; }
+  .work-cta { font-size: 34px; }
+  .work-contact { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .work-contact-item { font-size: 18px; }
+}
