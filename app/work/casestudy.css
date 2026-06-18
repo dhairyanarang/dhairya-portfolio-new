@@ -778,6 +778,89 @@ body:has(.cs-page) {
 .cs-pdp-q { margin: 0 0 18px; font-size: 24px; font-weight: 500; line-height: 1.25; color: var(--ink); }
 .cs-pdp-items { display: flex; flex-wrap: wrap; gap: 10px; }
 
+/* ── Image-led case studies — shared by .cs-page--era and .cs-page--onekey ────
+   Real imagery replaces the placeholder chrome here, but every motion cue
+   (reveal-on-scroll, hover scale) reuses the shared system unchanged. The same
+   spacing rails (cs-wrap / cs-section / cs-band) keep all case studies aligned. */
+
+/* A .cs-ph that holds a real image: drop the gradient/border placeholder chrome
+   so only the photo shows. The hover-scale still rides on .cs-ph (see above). */
+.cs-ph--img { background: none; border: none; }
+.cs-ph-img { object-fit: cover; }
+/* Hero photo is a composed 2240×1360 render — match it so nothing is cropped. */
+.cs-page--era .cs-hero-media .cs-ph--hero,
+.cs-page--onekey .cs-hero-media .cs-ph--hero { aspect-ratio: 2240 / 1360; }
+
+/* Two-column meta cards carrying a label + a descriptive line (ERA "My Role",
+   OneKey "Building Beyond Design"). */
+.cs-page--era .cs-meta-cards,
+.cs-page--onekey .cs-meta-cards { grid-template-columns: repeat(2, 1fr); }
+.cs-page--era .cs-meta-card,
+.cs-page--onekey .cs-meta-card { padding: 25px; }
+.cs-page--era .cs-meta-card dt,
+.cs-page--onekey .cs-meta-card dt { margin-bottom: 12px; }
+.cs-page--era .cs-meta-card dd,
+.cs-page--onekey .cs-meta-card dd { font-weight: 400; line-height: 1.5; color: var(--muted); }
+
+/* Design Opportunities: real reference app icons fill the logo chip. */
+.cs-page--era .cs-logo { display: block; overflow: hidden; background: none; border: none; }
+.cs-page--era .cs-logo-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Icon card (OneKey "Ecosystem"): a small line icon sits above the card title. */
+.cs-card-icon { display: block; width: 26px; height: 26px; margin-bottom: 6px; }
+
+/* Visual Execution — grouped screenshot showcase (3-up phones, or full-width). */
+.cs-screens-group { margin-top: 52px; }
+.cs-screens-group:first-of-type { margin-top: 44px; }
+.cs-screens-title { margin: 0 0 28px; font-size: 24px; font-weight: 500; color: var(--ink); }
+.cs-screens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+/* Single-column variant for wide device mockups (Watch / Mac). */
+.cs-screens--single { grid-template-columns: 1fr; gap: 24px; max-width: 920px; }
+/* No overflow clip: the device PNGs already carry their own rounded corners, so
+   the hover scale grows into the gap instead of being cropped at the edges. */
+.cs-screen { position: relative; border-radius: 24px; }
+.cs-screen-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* identical scale + easing to .cs-ph so the hover feel is exactly the same */
+  transition: transform 0.4s cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+.cs-hoverable:hover .cs-screen { z-index: 1; }
+.cs-hoverable:hover .cs-screen-img { transform: scale(1.03); }
+
+/* ── Escalation ladder (OneKey "Turning Point") ──────────────────────────────
+   A vertical sequence of pill rows joined by a faint connector line through the
+   dots; reuses the standard card lift on hover for consistency. */
+.cs-ladder { position: relative; margin-top: 44px; display: flex; flex-direction: column; gap: 16px; }
+.cs-ladder::before {
+  content: '';
+  position: absolute;
+  left: 39px; top: 39px; bottom: 39px;
+  width: 1px;
+  background: var(--line);
+}
+.cs-ladder-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 26px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.cs-ladder-step:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08); }
+.cs-ladder-mark {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: rgba(224, 30, 90, 0.12);
+}
+.cs-ladder-label { font-size: 17px; font-weight: 500; color: var(--ink); }
+.cs-ladder-note { margin: 22px 0 0; font-size: 15px; font-style: italic; line-height: 1.5; color: var(--muted-2); }
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 1000px) {
   .cs-wrap { padding-inline: 24px; }
@@ -821,4 +904,25 @@ body:has(.cs-page) {
   .cs-footer { flex-direction: column; align-items: flex-start; gap: 28px; padding: 80px 24px 64px; }
   .cs-cta { font-size: 34px; }
   .cs-contact { flex-direction: column; align-items: flex-start; gap: 16px; }
+  /* Tablet keeps the design's 3-up screen grid; phones drop to 2-up below. */
+  .cs-screens-group { margin-top: 44px; }
+}
+
+/* Phones — collapse the multi-column image-led layouts to stay legible. */
+@media (max-width: 640px) {
+  .cs-page--era .cs-meta-cards,
+  .cs-page--onekey .cs-meta-cards { grid-template-columns: 1fr; }
+  .cs-screens { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .cs-screens--single { grid-template-columns: 1fr; }
+  .cs-screens-title { font-size: 20px; }
+  .cs-ladder::before { left: 35px; }
+  .cs-ladder-step { padding: 20px 22px; }
+}
+
+/* Small phones — give long copy and the hero room to breathe. */
+@media (max-width: 420px) {
+  .cs-wrap { padding-inline: 18px; }
+  .cs-hero-title { font-size: 31px; }
+  .cs-hero-sub { font-size: 17px; }
+  .cs-h2 { font-size: 25px; }
 }

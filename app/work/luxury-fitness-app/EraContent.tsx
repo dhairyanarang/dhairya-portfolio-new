@@ -3,61 +3,50 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import '../casestudy.css'
 
-// ── Content (source of truth = the case study spec) ─────────────────────────
-const META = [
-  { dt: 'Role', dd: 'Product Designer' },
-  { dt: 'Timeline', dd: '2 Weeks' },
-  { dt: 'Team', dd: 'Client + Developer + Me' },
-  { dt: 'Responsibilities', dd: 'UX Strategy · Product Design · Visual Design · Handoff' },
+// ── Content (source of truth = the ERA Figma case study) ────────────────────
+const HERO_TABLE = [
+  { k: 'Role', v: 'Sole UX/UI Designer' },
+  { k: 'Design Timeline', v: '2 Week Sprint' },
+  { k: 'Platforms', v: 'iOS & Android' },
+  { k: 'Responsibilities', v: 'UX Strategy · 0 → 1 Product Design · Design System · Developer Handoff · Iteration Support' },
+  { k: 'Tools', v: 'Figma · Slack' },
 ]
 
-const OVERVIEW = [
-  { k: 'Role', v: 'Sole Product Designer' },
-  { k: 'Team', v: 'Client + Developer + Me' },
-  { k: 'Timeline', v: '2 Week Sprint' },
-  { k: 'Platforms', v: 'iOS & Android' },
-  { k: 'Responsibilities', v: 'UX Strategy · Product Design · Visual Design · Design System · Developer Handoff · Iteration Support' },
-  { k: 'Tools', v: 'Figma · Prototyping · Dev Handoff' },
+const ROLE = [
+  { label: 'Product Thinking', text: 'Defined experiences that prioritised motivation, consistency and long-term engagement over simple workout tracking.' },
+  { label: 'Experience Design', text: 'Designed intuitive flows across workouts, progress tracking and competitive experiences.' },
+  { label: 'Visual Design', text: 'Built a premium visual language that balances performance with luxury-inspired aesthetics.' },
+  { label: 'Collaboration', text: 'Worked closely with stakeholders and developers to align design decisions with business goals and technical feasibility.' },
 ]
 
 const CHALLENGE = [
-  { kicker: 'Business Goal', title: 'Earn the subscription', text: 'Ship a premium fitness product that feels worth paying for and stands apart from the sea of free workout trackers.' },
-  { kicker: 'User Goal', title: 'Train, don’t fiddle', text: 'Let serious lifters log workouts fast, see progression over time, and stay motivated without fighting the interface.' },
-  { kicker: 'Product Goal', title: 'Calm the complexity', text: 'Turn dense workout data into a calm, movement-first experience — and deliver it within a two-week sprint.' },
+  { title: 'Elite, not intimidating', text: 'Design for serious lifters without making newcomers feel excluded.' },
+  { title: 'Progress should feel rewarding', text: 'Every action should reinforce consistency and celebrate progress.' },
+  { title: 'Utility should feel luxurious', text: 'Functional experiences shouldn’t feel clinical. Performance and aesthetics should coexist.' },
 ]
 
 const REFERENCES = [
-  { name: 'Hevy', learning: 'Frictionless set logging keeps lifters in flow.', applied: 'One-tap set entry, mid-workout.' },
-  { name: 'Ladder', learning: 'Structured programs build commitment.', applied: 'Guided flows with a clear next step.' },
-  { name: 'Gymverse', learning: 'Visible progress drives return visits.', applied: 'Progression surfaced as the hero.' },
-  { name: 'Home Workout', learning: 'Low-friction defaults welcome beginners.', applied: 'Sensible defaults so logging never stalls.' },
-  { name: 'Rolex', learning: 'Luxury lives in restraint and detail.', applied: 'Generous space, quiet type, no clutter.' },
-  { name: 'Porsche', learning: 'Premium signals precision and performance.', applied: 'Performance data treated as the jewel.' },
+  { name: 'Hevy', logo: 'logo-hevy', learning: 'Frictionless set logging keeps lifters in flow.', applied: 'One-tap set entry, mid-workout.' },
+  { name: 'Ladder', logo: 'logo-ladder', learning: 'Structured programs build commitment.', applied: 'Guided flows with a clear next step.' },
+  { name: 'Gymverse', logo: 'logo-gymverse', learning: 'Visible progress drives return visits.', applied: 'Progression surfaced as the hero.' },
+  { name: 'Home Workout', logo: 'logo-home-workout', learning: 'Low-friction defaults welcome beginners.', applied: 'Sensible defaults so logging never stalls.' },
+  { name: 'Rolex', logo: 'logo-rolex', learning: 'Luxury lives in restraint and detail.', applied: 'Generous space, quiet type, no clutter.' },
 ]
 
 const CONSTRAINTS = [
-  { title: '2 Week Timeline', text: 'Concept to developer-ready in ten working days.' },
-  { title: 'Workout Complexity', text: 'Sets, reps, weight, RPE, rest, supersets — without overwhelm.' },
-  { title: 'Developer Speed', text: 'Patterns simple enough to build in parallel.' },
-  { title: 'Premium Aesthetics', text: 'Had to feel luxury-grade, not another free tracker.' },
-  { title: 'Feature Density', text: 'Five product areas competing for one screen.' },
-]
-
-const PRIORITIES = [
-  { name: 'Workout Experience', text: 'The core loop. If logging fails, nothing else matters.' },
-  { name: 'Progression', text: 'The reason people stay — proof they’re improving.' },
-  { name: 'Nutrition', text: 'Supports results, but secondary to training.' },
-  { name: 'Leaderboard', text: 'A motivation layer — valuable, not foundational.' },
-  { name: 'Subscription', text: 'Monetization, designed last once the value was clear.' },
+  { title: 'Premium without excess', text: 'The product needed to feel elevated without becoming visually overwhelming.' },
+  { title: 'Motivation without distraction', text: 'Gamification had to encourage progress without competing for attention.' },
+  { title: 'Complexity without friction', text: 'Multiple features had to remain simple and approachable.' },
 ]
 
 const DECISIONS = [
   {
     title: 'Performance Data Hierarchy',
     problem: 'Too many metrics competed for attention.',
-    decision: 'Surface one primary metric per screen; demote the rest.',
+    decision: 'Show one main metric per screen; demote the rest.',
     reason: 'Lifters scan, they don’t read, mid-set.',
     outcome: 'Faster comprehension, calmer screens.',
   },
@@ -84,22 +73,11 @@ const DECISIONS = [
   },
 ]
 
-const FLOW = [
-  { name: 'Start Workout', note: 'Pick a program or pick up where you left off.' },
-  { name: 'Log Set', note: 'One tap to record reps and weight.' },
-  { name: 'Add Feedback', note: 'Capture effort (RPE) without slowing down.' },
-  { name: 'Rest Timer', note: 'A glanceable timer keeps the rhythm.' },
-  { name: 'Next Exercise', note: 'The next move is always one step ahead.' },
-  { name: 'Workout Complete', note: 'A clear, satisfying end state.' },
-  { name: 'Capture Progress', note: 'Today’s session folds into the long arc.' },
-]
-
+// Visual-execution screenshot groups (assets in /public/work/luxury-fitness-app)
 const SCREENS = [
-  { name: 'Home', cls: 'cs-bento-a' },
-  { name: 'Workout', cls: 'cs-bento-b' },
-  { name: 'Nutrition', cls: 'cs-bento-c' },
-  { name: 'Progress', cls: 'cs-bento-d' },
-  { name: 'Leaderboard', cls: 'cs-bento-e' },
+  { group: 'Onboarding Flow', shots: ['onboarding-1', 'onboarding-2', 'onboarding-3'] },
+  { group: 'Core Flow', shots: ['core-1', 'core-2', 'core-3', 'core-4', 'core-5', 'core-6', 'core-7', 'core-8', 'core-9'] },
+  { group: 'Other Flows', shots: ['other-1', 'other-2', 'other-3'] },
 ]
 
 const COLLAB = [
@@ -108,13 +86,6 @@ const COLLAB = [
   { title: 'Reduced ambiguity', text: 'Annotated specs so behaviour wasn’t left to guesswork.' },
   { title: 'Refined interactions', text: 'Tuned motion and feedback alongside the developer.' },
   { title: 'Answered questions', text: 'Stayed close throughout the sprint to unblock fast.' },
-]
-
-const OUTCOMES = [
-  'Developer-ready foundation',
-  'Unified visual language',
-  'Simplified workout complexity',
-  'Reduced implementation ambiguity',
 ]
 
 const REFLECTION = [
@@ -190,7 +161,7 @@ export default function EraContent() {
   }
 
   return (
-    <main className="cs-page">
+    <main className="cs-page cs-page--era">
       <div className="cs-progress" aria-hidden="true"><i /></div>
 
       <Link href="/work" className="cs-back" aria-label="Back to Projects" onClick={handleBack}>
@@ -203,36 +174,51 @@ export default function EraContent() {
       <header className="cs-wrap cs-hero">
         <p className="cs-hero-eyebrow reveal">Client Work • iOS &amp; Android • 2026</p>
         <h1 className="cs-hero-title reveal" style={delay(0.06)}>
-          Designing a premium fitness experience for serious strength training.
+          Designing a luxury fitness experience that makes consistency feel rewarding.
         </h1>
         <p className="cs-hero-sub reveal" style={delay(0.12)}>
-          Balancing luxury aesthetics, workout usability, and long-term motivation within a 2-week sprint.
+          From workout logging to leaderboards and progress tracking, the goal was to create an
+          experience that feels elite, motivating, and effortless to use.
         </p>
-        <dl className="cs-meta-cards reveal" style={delay(0.18)}>
-          {META.map((m) => (
-            <div className="cs-meta-card" key={m.dt}>
-              <dt>{m.dt}</dt>
-              <dd>{m.dd}</dd>
-            </div>
-          ))}
-        </dl>
-        <div className="cs-hero-media reveal cs-hoverable" style={delay(0.24)}>
-          <div className="cs-ph cs-ph--hero" data-label="Hero · 16:10" />
-        </div>
-      </header>
-
-      {/* ── 2 · PROJECT OVERVIEW ─────────────────────────────────────────── */}
-      <section className="cs-wrap cs-section">
-        <p className="cs-eyebrow reveal">02 / Project Overview</p>
-        <h2 className="cs-h2 reveal" style={delay(0.05)}>What exactly I did.</h2>
-        <div className="cs-table reveal" style={delay(0.1)}>
-          {OVERVIEW.map((r) => (
+        <div className="cs-table reveal" style={delay(0.18)}>
+          {HERO_TABLE.map((r) => (
             <div className="cs-table-row" key={r.k}>
               <div className="cs-table-key">{r.k}</div>
               <div className="cs-table-val">{r.v}</div>
             </div>
           ))}
         </div>
+        <div className="cs-hero-media reveal cs-hoverable" style={delay(0.24)}>
+          <div className="cs-ph cs-ph--hero cs-ph--img">
+            <Image
+              src="/work/luxury-fitness-app/hero.png"
+              alt="ERA fitness app — track, compete, progress"
+              fill
+              priority
+              sizes="(max-width: 1000px) 100vw, 1120px"
+              className="cs-ph-img"
+            />
+          </div>
+        </div>
+      </header>
+
+      {/* ── 2 · MY ROLE ──────────────────────────────────────────────────── */}
+      <section className="cs-wrap cs-section">
+        <p className="cs-eyebrow reveal">02 / My Role</p>
+        <h2 className="cs-h2 reveal" style={delay(0.05)}>Designing beyond screens.</h2>
+        <p className="cs-lead reveal" style={delay(0.08)}>
+          As the Product Designer, my responsibility wasn’t just to create interfaces. I translated
+          business goals into an experience that motivates users to return consistently and feel
+          rewarded throughout their fitness journey.
+        </p>
+        <dl className="cs-meta-cards reveal" style={delay(0.12)}>
+          {ROLE.map((r) => (
+            <div className="cs-meta-card" key={r.label}>
+              <dt>{r.label}</dt>
+              <dd>{r.text}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
       {/* ── 3 · THE CHALLENGE ────────────────────────────────────────────── */}
@@ -242,9 +228,8 @@ export default function EraContent() {
           <h2 className="cs-h2 reveal" style={delay(0.05)}>Three goals, one screen.</h2>
           <div className="cs-cards cs-cards--3 reveal" style={delay(0.1)}>
             {CHALLENGE.map((c) => (
-              <div className="cs-card-wrap" key={c.kicker}>
+              <div className="cs-card-wrap" key={c.title}>
                 <article className="cs-card">
-                  <span className="cs-card-kicker">{c.kicker}</span>
                   <h3 className="cs-card-title">{c.title}</h3>
                   <p className="cs-card-text">{c.text}</p>
                 </article>
@@ -254,12 +239,16 @@ export default function EraContent() {
         </div>
       </section>
 
-      {/* ── 4 · UNDERSTANDING THE SPACE ──────────────────────────────────── */}
+      {/* ── 4 · DESIGN OPPORTUNITIES ─────────────────────────────────────── */}
       <section className="cs-wrap cs-section">
-        <p className="cs-eyebrow reveal">04 / Understanding the Space</p>
+        <p className="cs-eyebrow reveal">04 / Design Opportunities</p>
         <h2 className="cs-h2 reveal" style={delay(0.05)}>
-          What I borrowed — from trackers and from luxury.
+          Translating inspiration into product decisions.
         </h2>
+        <p className="cs-lead reveal" style={delay(0.08)}>
+          Rather than reinventing fitness experiences, I studied what already worked and identified
+          opportunities to combine utility with emotion.
+        </p>
         <div className="cs-compare reveal" style={delay(0.1)}>
           <div className="cs-compare-head">
             <span>Reference</span>
@@ -269,7 +258,15 @@ export default function EraContent() {
           {REFERENCES.map((r) => (
             <div className="cs-compare-row" key={r.name}>
               <div className="cs-compare-ref">
-                <span className="cs-logo" aria-hidden="true" />
+                <span className="cs-logo">
+                  <Image
+                    src={`/work/luxury-fitness-app/${r.logo}.png`}
+                    alt={`${r.name} app icon`}
+                    width={44}
+                    height={44}
+                    className="cs-logo-img"
+                  />
+                </span>
                 <span className="cs-compare-name">{r.name}</span>
               </div>
               <div className="cs-compare-cell">{r.learning}</div>
@@ -279,11 +276,15 @@ export default function EraContent() {
         </div>
       </section>
 
-      {/* ── 5 · DESIGN CONSTRAINTS ───────────────────────────────────────── */}
+      {/* ── 5 · PRODUCT CONSTRAINTS ──────────────────────────────────────── */}
       <section className="cs-band">
         <div className="cs-wrap cs-section">
-          <p className="cs-eyebrow reveal">05 / Design Constraints</p>
-          <h2 className="cs-h2 reveal" style={delay(0.05)}>What I had to design around.</h2>
+          <p className="cs-eyebrow reveal">05 / Product Constraints</p>
+          <h2 className="cs-h2 reveal" style={delay(0.05)}>Designing within real-world limitations.</h2>
+          <p className="cs-lead reveal" style={delay(0.08)}>
+            Good product design isn’t about unlimited possibilities. It’s about making thoughtful
+            decisions within constraints.
+          </p>
           <div className="cs-cards cs-cards--3 reveal" style={delay(0.1)}>
             {CONSTRAINTS.map((c) => (
               <div className="cs-card-wrap" key={c.title}>
@@ -297,109 +298,72 @@ export default function EraContent() {
         </div>
       </section>
 
-      {/* ── 6 · PRODUCT PRIORITIZATION ───────────────────────────────────── */}
+      {/* ── 6 · KEY DESIGN DECISIONS ─────────────────────────────────────── */}
       <section className="cs-wrap cs-section">
-        <p className="cs-eyebrow reveal">06 / Product Prioritization</p>
-        <h2 className="cs-h2 reveal" style={delay(0.05)}>What ships first — and why.</h2>
-        <div className="cs-priority reveal" style={delay(0.1)}>
-          {PRIORITIES.map((p, i) => (
-            <div className={`cs-priority-row${i === 0 ? ' cs-priority-row--lead' : ''}`} key={p.name}>
-              <div className="cs-priority-num">{String(i + 1).padStart(2, '0')}</div>
-              <div className="cs-priority-name">{p.name}</div>
-              <div className="cs-priority-text">{p.text}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── 7 · KEY DESIGN DECISIONS ─────────────────────────────────────── */}
-      <section className="cs-band">
-        <div className="cs-wrap cs-section">
-          <p className="cs-eyebrow reveal">07 / Key Design Decisions</p>
-          <h2 className="cs-h2 reveal" style={delay(0.05)}>How I think, made explicit.</h2>
-          <div className="cs-decisions reveal" style={delay(0.1)}>
-            {DECISIONS.map((d) => (
-              <article className="cs-decision" key={d.title}>
-                <h3 className="cs-decision-title">{d.title}</h3>
-                <div className="cs-pdro">
-                  <div className="cs-pdro-item">
-                    <span className="cs-pdro-label">Problem</span>
-                    <span className="cs-pdro-text">{d.problem}</span>
-                  </div>
-                  <div className="cs-pdro-item">
-                    <span className="cs-pdro-label">Decision</span>
-                    <span className="cs-pdro-text">{d.decision}</span>
-                  </div>
-                  <div className="cs-pdro-item">
-                    <span className="cs-pdro-label">Reason</span>
-                    <span className="cs-pdro-text">{d.reason}</span>
-                  </div>
-                  <div className="cs-pdro-item cs-pdro-item--outcome">
-                    <span className="cs-pdro-label">Outcome</span>
-                    <span className="cs-pdro-text">{d.outcome}</span>
-                  </div>
+        <p className="cs-eyebrow reveal">06 / Key Design Decisions</p>
+        <h2 className="cs-h2 reveal" style={delay(0.05)}>How I think, made explicit.</h2>
+        <div className="cs-decisions reveal" style={delay(0.1)}>
+          {DECISIONS.map((d) => (
+            <article className="cs-decision" key={d.title}>
+              <h3 className="cs-decision-title">{d.title}</h3>
+              <div className="cs-pdro">
+                <div className="cs-pdro-item">
+                  <span className="cs-pdro-label">Problem</span>
+                  <span className="cs-pdro-text">{d.problem}</span>
                 </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 8 · WORKOUT EXPERIENCE DEEP DIVE ─────────────────────────────── */}
-      <section className="cs-wrap cs-section">
-        <p className="cs-eyebrow reveal">08 / Workout Experience — Deep Dive</p>
-        <h2 className="cs-h2 reveal" style={delay(0.05)}>
-          The core loop, from first set to captured progress.
-        </h2>
-        <p className="cs-lead reveal" style={delay(0.08)}>
-          The workout is where the product lives or dies. I designed the full session as one
-          continuous rhythm — logging, feedback and rest never break the flow.
-        </p>
-
-        <div className="cs-flow reveal" style={delay(0.1)}>
-          {FLOW.map((s, i) => (
-            <div key={s.name}>
-              <div className="cs-flow-step">
-                <span className="cs-flow-index">{i + 1}</span>
-                <div className="cs-flow-body">
-                  <span className="cs-flow-name">{s.name}</span>
-                  <span className="cs-flow-note">{s.note}</span>
+                <div className="cs-pdro-item">
+                  <span className="cs-pdro-label">Decision</span>
+                  <span className="cs-pdro-text">{d.decision}</span>
+                </div>
+                <div className="cs-pdro-item">
+                  <span className="cs-pdro-label">Reason</span>
+                  <span className="cs-pdro-text">{d.reason}</span>
+                </div>
+                <div className="cs-pdro-item cs-pdro-item--outcome">
+                  <span className="cs-pdro-label">Outcome</span>
+                  <span className="cs-pdro-text">{d.outcome}</span>
                 </div>
               </div>
-              {i < FLOW.length - 1 && <div className="cs-flow-connector" />}
-            </div>
-          ))}
-        </div>
-
-        <div className="cs-phones reveal" style={delay(0.14)}>
-          {['Start', 'Log Set', 'Rest Timer', 'Complete'].map((cap) => (
-            <div className="cs-phone cs-hoverable" key={cap}>
-              <div className="cs-ph cs-ph--phone" data-label="390 × 844" />
-              <span className="cs-phone-cap">{cap}</span>
-            </div>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* ── 9 · SELECTED SCREENS ─────────────────────────────────────────── */}
+      {/* ── 8 · VISUAL EXECUTION ─────────────────────────────────────────── */}
       <section className="cs-band">
         <div className="cs-wrap cs-section">
-          <p className="cs-eyebrow reveal">09 / Selected Screens</p>
-          <h2 className="cs-h2 reveal" style={delay(0.05)}>Visual execution, end to end.</h2>
-          <div className="cs-bento reveal" style={delay(0.1)}>
-            {SCREENS.map((s) => (
-              <div className={`cs-bento-item cs-hoverable ${s.cls}`} key={s.name}>
-                <div className="cs-ph" data-label="Screen" />
-                <span className="cs-bento-cap">{s.name}</span>
+          <p className="cs-eyebrow reveal">07 / Visual Execution</p>
+          <h2 className="cs-h2 reveal" style={delay(0.05)}>Bringing the experience to life.</h2>
+          <p className="cs-lead reveal" style={delay(0.08)}>
+            Every screen was designed to reinforce motivation, minimise friction and strengthen the
+            product’s premium identity.
+          </p>
+          {SCREENS.map((g) => (
+            <div className="cs-screens-group reveal" key={g.group} style={delay(0.1)}>
+              <h3 className="cs-screens-title">{g.group}</h3>
+              <div className="cs-screens">
+                {g.shots.map((shot) => (
+                  <div className="cs-screen cs-hoverable" key={shot}>
+                    <Image
+                      src={`/work/luxury-fitness-app/${shot}.png`}
+                      alt=""
+                      aria-hidden="true"
+                      width={660}
+                      height={1366}
+                      sizes="(max-width: 1000px) 45vw, 350px"
+                      className="cs-screen-img"
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ── 10 · COLLABORATION BEYOND FIGMA ──────────────────────────────── */}
+      {/* ── 9 · COLLABORATION BEYOND FIGMA ───────────────────────────────── */}
       <section className="cs-wrap cs-section">
-        <p className="cs-eyebrow reveal">10 / Collaboration Beyond Figma</p>
+        <p className="cs-eyebrow reveal">08 / Collaboration Beyond Figma</p>
         <h2 className="cs-h2 reveal" style={delay(0.05)}>Design didn’t stop at handoff.</h2>
         <div className="cs-cards cs-cards--3 reveal" style={delay(0.1)}>
           {COLLAB.map((c) => (
@@ -413,49 +377,29 @@ export default function EraContent() {
         </div>
       </section>
 
-      {/* ── 11 · OUTCOMES ────────────────────────────────────────────────── */}
+      {/* ── 11 · REFLECTION ──────────────────────────────────────────────── */}
       <section className="cs-band">
         <div className="cs-wrap cs-section">
-          <p className="cs-eyebrow reveal">11 / Outcomes</p>
-          <h2 className="cs-h2 reveal" style={delay(0.05)}>What the work delivered.</h2>
-          <div className="cs-outcomes reveal" style={delay(0.1)}>
-            {OUTCOMES.map((o) => (
-              <div className="cs-outcome" key={o}>
-                <span className="cs-outcome-mark" aria-hidden="true">✓</span>
-                <span className="cs-outcome-text">{o}</span>
+          <p className="cs-eyebrow reveal">09 / Reflection</p>
+          <h2 className="cs-h2 reveal" style={delay(0.05)}>What I took away.</h2>
+          <div className="cs-cards cs-cards--3 reveal" style={delay(0.1)}>
+            {REFLECTION.map((r) => (
+              <div className="cs-card-wrap" key={r.title}>
+                <article className="cs-card">
+                  <h3 className="cs-card-title">{r.title}</h3>
+                  <p className="cs-card-text">{r.text}</p>
+                </article>
               </div>
             ))}
           </div>
-          <p className="cs-metric-note reveal" style={delay(0.14)}>
-            Quantitative metrics to be added as the product reaches users post-launch.
-          </p>
         </div>
       </section>
 
-      {/* ── 12 · REFLECTION ──────────────────────────────────────────────── */}
-      <section className="cs-wrap cs-section">
-        <p className="cs-eyebrow reveal">12 / Reflection</p>
-        <h2 className="cs-h2 reveal" style={delay(0.05)}>What I took away.</h2>
-        <div className="cs-cards cs-cards--3 reveal" style={delay(0.1)}>
-          {REFLECTION.map((r) => (
-            <div className="cs-card-wrap" key={r.title}>
-              <article className="cs-card">
-                <h3 className="cs-card-title">{r.title}</h3>
-                <p className="cs-card-text">{r.text}</p>
-              </article>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── 13 · NEXT PROJECT ────────────────────────────────────────────── */}
+      {/* ── NEXT PROJECT ─────────────────────────────────────────────────── */}
       <section className="cs-wrap cs-section cs-section--tight">
         <p className="cs-eyebrow reveal">Next Project</p>
-        <Link href="/work/onekey" className="cs-next reveal cs-hoverable" style={delay(0.05)}>
+        <Link href="/work/onekey" className="cs-next reveal" style={delay(0.05)}>
           <div className="cs-next-inner">
-            <div className="cs-next-media">
-              <div className="cs-ph" data-label="OneKey" />
-            </div>
             <div>
               <span className="cs-next-label">Case Study</span>
               <p className="cs-next-title">OneKey</p>
