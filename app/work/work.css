@@ -10,10 +10,8 @@ body:has(.work-page) {
   background: #ffffff;
 }
 
-.work-page,
-.work-page * { cursor: auto !important; }
-.work-page a,
-.work-page button { cursor: pointer !important; }
+/* The custom green cursor (mounted globally) is used here too, so the OS cursor
+   stays hidden (globals.css sets `* { cursor: none }`). */
 
 .work-page {
   position: relative;
@@ -23,6 +21,20 @@ body:has(.work-page) {
   color: #0a0a0a;
   font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
   overflow: hidden;
+  /* Open transition (runs on mount) — matches the About page. Opacity-only ON
+     PURPOSE so the page root never becomes a containing block for the
+     position:fixed back button (otherwise it scrolls with the page). */
+  animation: work-page-in 0.5s ease both;
+}
+/* Close transition — toggled from WorkContent just before navigating home. */
+.work-page.is-leaving {
+  animation: work-page-out 0.35s ease both;
+}
+@keyframes work-page-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes work-page-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .work-page,
+  .work-page.is-leaving { animation: none; }
 }
 
 /* centered content rail → 1232px content at desktop, 140px gutters at 1512 */
@@ -33,9 +45,9 @@ body:has(.work-page) {
   padding-inline: 24px;
 }
 
-/* Back */
+/* Back — matches the About page back button exactly; fixed so it never scrolls away. */
 .work-back {
-  position: absolute;
+  position: fixed;
   top: 28px;
   left: 32px;
   z-index: 20;
@@ -46,7 +58,7 @@ body:has(.work-page) {
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 999px;
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 500;
   color: #000000;
   text-decoration: none;
@@ -61,14 +73,14 @@ body:has(.work-page) {
 }
 .work-title {
   margin: 0;
-  font-size: 100px;
-  font-weight: 700;
+  font-size: 52px;
+  font-weight: 500;
   line-height: 1;
   color: #0a0a0a;
 }
 .work-subtitle {
   margin: 16px 0 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 400;
   color: rgba(0, 0, 0, 0.6);
 }
@@ -98,6 +110,13 @@ body:has(.work-page) {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Wraps the card when the project links to a case study (first card). */
+.work-card-link {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
 .work-card {
   display: flex;
   flex-direction: column;
@@ -134,7 +153,7 @@ body:has(.work-page) {
 }
 .work-card-title {
   margin: 0;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 500;
   color: #0a0a0a;
 }
@@ -163,7 +182,11 @@ body:has(.work-page) {
   line-height: 1.2;
   color: #0a0a0a;
 }
-.work-cta-ghost { color: rgba(0, 0, 0, 0.18); }
+/* Stroke-outlined "together" — matches the About page footer exactly. */
+.work-cta-ghost {
+  color: transparent;
+  -webkit-text-stroke: 1.2px rgba(10, 10, 10, 0.85);
+}
 .work-contact { display: flex; gap: 32px; align-items: center; }
 .work-contact-item {
   display: flex;
@@ -187,7 +210,7 @@ body:has(.work-page) {
 /* ── Responsive fallback (design is desktop-first) ────────────────────────── */
 @media (max-width: 1000px) {
   .work-header { padding-top: 110px; }
-  .work-title { font-size: 60px; }
+  .work-title { font-size: 40px; }
   .work-grid { grid-template-columns: 1fr; gap: 28px; margin-top: 40px; }
   .work-card-media { height: 300px; }
   .work-footer { flex-direction: column; align-items: flex-start; gap: 28px; margin-top: 80px; padding-bottom: 64px; }

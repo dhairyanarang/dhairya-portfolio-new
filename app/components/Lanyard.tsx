@@ -265,23 +265,21 @@ function Band({
       curve.points[2].copy(j1.current.lerped)
       curve.points[3].copy(fixed.current.translation())
       band.current.geometry.setPoints(curve.getPoints(isMobile ? 16 : 32))
-      // Sit perfectly still until dragged: once the card is not being dragged
-      // and has lost its momentum, put every body to sleep so there is zero idle
-      // jitter (drag wakes them again). While it is still moving, gently keep the
-      // card facing forward — skipped near rest so it can actually settle/sleep.
+      // Gentle perpetual sway at rest: a soft "breeze" pushes the card with a
+      // tiny oscillating force so it never sits dead-still. Two slow sine waves of
+      // different periods keep the motion organic rather than mechanical; the rope
+      // follows naturally via physics. The force is sized to the card's mass and
+      // damping so peak speed stays barely above the old sleep threshold (subtle).
       if (!dragged) {
-        const lv = card.current.linvel()
+        const t = state.clock.elapsedTime
+        const force = (Math.sin(t * 0.5) + 0.6 * Math.sin(t * 0.21)) * 0.12
+        ;[j1, j2, j3, card].forEach((ref) => ref.current?.wakeUp())
+        card.current.applyImpulse({ x: force * delta, y: 0, z: 0 }, true)
+        // keep the card gently facing forward while it sways
+        rot.copy(card.current.rotation())
         ang.copy(card.current.angvel())
-        const speed =
-          Math.abs(lv.x) + Math.abs(lv.y) + Math.abs(lv.z) +
-          Math.abs(ang.x) + Math.abs(ang.y) + Math.abs(ang.z)
-        if (speed < 0.08) {
-          ;[fixed, j1, j2, j3, card].forEach((ref) => ref.current?.sleep())
-        } else {
-          rot.copy(card.current.rotation())
-          if (Math.abs(rot.y) > 0.02) {
-            card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.1, z: ang.z })
-          }
+        if (Math.abs(rot.y) > 0.02) {
+          card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.1, z: ang.z })
         }
       }
     }

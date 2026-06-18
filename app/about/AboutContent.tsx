@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -19,15 +20,46 @@ const STATS = [
 const delay = (s: number) => ({ ['--reveal-delay']: `${s}s` } as React.CSSProperties)
 
 export default function AboutContent() {
-  // The interactive lanyard only renders on desktop; mobile gets a static card.
+  const router = useRouter()
+  // The interactive lanyard renders on desktop only (>1200px). At/below that the
+  // ID card is hidden entirely — no static fallback — so nothing shifts/overlaps.
   const [showLanyard, setShowLanyard] = useState(false)
+  // Defer mounting the lanyard until its section scrolls into view, so the card
+  // drop animation plays as you arrive at it (not silently on page load).
+  const [lanyardReady, setLanyardReady] = useState(false)
+  const lanyardWrapRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1101px)')
+    // Desktop with a real mouse only: a min-width gate alone would still show the
+    // (drag-only) card on large touch tablets like an iPad Pro, leaving its space
+    // empty. Requiring a fine pointer + hover hides it on all touch devices.
+    const mq = window.matchMedia('(min-width: 1201px) and (hover: hover) and (pointer: fine)')
     const update = () => setShowLanyard(mq.matches)
     update()
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
+
+  useEffect(() => {
+    if (!showLanyard) return
+    const el = lanyardWrapRef.current
+    if (!el || !('IntersectionObserver' in window)) {
+      setLanyardReady(true)
+      return
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setLanyardReady(true)
+          io.disconnect()
+        }
+      },
+      // fire once the lanyard column is meaningfully in view so the drop is seen
+      { rootMargin: '0px 0px -25% 0px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [showLanyard])
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>('.about-page .reveal'))
@@ -51,12 +83,61 @@ export default function AboutContent() {
     return () => io.disconnect()
   }, [])
 
+  // Subtle scroll parallax on the hero: the photo (background) drifts slightly
+  // DOWN so it scrolls a touch slower than the page, while the hero content
+  // (foreground) drifts UP so it scrolls a touch faster — the small speed
+  // difference between the two reads as depth. rAF-throttled, reduced-motion safe.
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const hero = document.querySelector<HTMLElement>('.about-hero')
+    const img = document.querySelector<HTMLElement>('.about-hero-img')
+    const inner = document.querySelector<HTMLElement>('.about-hero-inner')
+    if (!hero || !img) return
+
+    let raf = 0
+    const apply = () => {
+      raf = 0
+      const h = hero.offsetHeight || window.innerHeight
+      const p = Math.min(Math.max(window.scrollY / h, 0), 1)
+      // base scale 1.06 (set in CSS) gives ~3% overflow on each edge; the image
+      // shift stays under that so the photo never reveals a gap.
+      const imgY = p * h * 0.02   // background: drifts down, slightly slower
+      const txtY = -p * h * 0.05  // foreground: drifts up, slightly faster
+      img.style.transform = `translate3d(0, ${imgY}px, 0) scale(1.06)`
+      if (inner) {
+        inner.style.transform = `translate3d(0, ${txtY}px, 0)`
+        inner.style.opacity = String(1 - p * 0.55)
+      }
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply) }
+    apply()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  // Close transition: play the exit animation, then route home. Modified clicks
+  // (cmd/ctrl/middle) fall through to the browser's default new-tab behaviour.
+  const handleBack = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+    e.preventDefault()
+    const page = document.querySelector('.about-page')
+    if (!page || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      router.push('/')
+      return
+    }
+    page.classList.add('is-leaving')
+    window.setTimeout(() => router.push('/'), 380)
+  }
+
   return (
     <main
       className="about-page"
       style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
     >
-      <Link href="/" className="about-back" aria-label="Back to Canvas">
+      <Link href="/" className="about-back" aria-label="Back to Canvas" onClick={handleBack}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/about/icon-arrow-left.svg" alt="" aria-hidden="true" width={18} height={18} />
         Back to Canvas
@@ -96,7 +177,7 @@ export default function AboutContent() {
       </section>
 
       {/* ── Story + ID card ───────────────────────────────────────────────── */}
-      <section className="about-main">
+      <section className={`about-main${showLanyard ? '' : ' about-main--solo'}`}>
         <div className="about-story">
           <article className="about-block reveal">
             <p className="about-block-eyebrow">01 / The Detour</p>
@@ -132,26 +213,21 @@ export default function AboutContent() {
           </article>
         </div>
 
-        {showLanyard ? (
-          <div className="about-lanyard" aria-hidden="true">
-            <Lanyard
-              frontImage="/id-card-front.png"
-              backImage="/id-card-back.png"
-              position={[0, 0.5, 18]}
-              fov={20}
-              lanyardWidth={1}
-              anchor={[2, 4, 0]}
-            />
-          </div>
-        ) : (
-          <div className="about-idcard reveal" style={delay(0.1)}>
-            <Image
-              src="/id-card-front.png"
-              alt="Dhairya Narang — Product Designer ID badge"
-              width={345}
-              height={483}
-              className="about-idcard-img"
-            />
+        {/* Desktop only (>1200px). The canvas mounts only once the column scrolls
+            into view so the drop animation plays on arrival. Below 1200px nothing
+            is rendered — the ID card is hidden entirely. */}
+        {showLanyard && (
+          <div className="about-lanyard" aria-hidden="true" ref={lanyardWrapRef}>
+            {lanyardReady && (
+              <Lanyard
+                frontImage="/id-card-front.png"
+                backImage="/id-card-back.png"
+                position={[0, 0.5, 18]}
+                fov={20}
+                lanyardWidth={1}
+                anchor={[2, 4, 0]}
+              />
+            )}
           </div>
         )}
       </section>

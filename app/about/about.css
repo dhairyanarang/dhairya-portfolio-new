@@ -12,10 +12,8 @@ body:has(.about-page) {
   background: #ffffff;
 }
 
-.about-page,
-.about-page * { cursor: auto !important; }
-.about-page a,
-.about-page button { cursor: pointer !important; }
+/* The custom green cursor (mounted globally) is used here too, so the OS cursor
+   stays hidden (globals.css sets `* { cursor: none }`). */
 
 .about-page {
   position: relative;
@@ -27,6 +25,21 @@ body:has(.about-page) {
   /* clip (not hidden) so it doesn't create a scroll container that would break
      the sticky lanyard column. */
   overflow-x: clip;
+  /* Open transition (runs on mount). Opacity-only ON PURPOSE: a transform on the
+     page root would create a containing block for the position:fixed back button
+     (it would then scroll with the page) and could disturb the sticky lanyard.
+     The hero reveal + parallax provide the motion. */
+  animation: about-page-in 0.5s ease both;
+}
+/* Close transition — toggled from AboutContent just before navigating home. */
+.about-page.is-leaving {
+  animation: about-page-out 0.35s ease both;
+}
+@keyframes about-page-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes about-page-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .about-page,
+  .about-page.is-leaving { animation: none; }
 }
 
 /* ── Scroll-reveal animation ──────────────────────────────────────────────── */
@@ -36,7 +49,9 @@ body:has(.about-page) {
   transition:
     opacity 0.7s cubic-bezier(0.22, 0.7, 0.2, 1) var(--reveal-delay, 0s),
     transform 0.7s cubic-bezier(0.22, 0.7, 0.2, 1) var(--reveal-delay, 0s);
-  will-change: opacity, transform;
+  /* No `will-change`: it promoted the gallery to its own GPU layer that could
+     composite OVER the sticky lanyard card (the "card hidden behind the image
+     strip" bug). The transition is cheap enough without it. */
 }
 .about-page .reveal.is-visible {
   opacity: 1;
@@ -50,9 +65,9 @@ body:has(.about-page) {
   .about-page .reveal { opacity: 1; transform: none; transition: none; }
 }
 
-/* Back to canvas */
+/* Back to canvas — fixed so it stays put while the page scrolls */
 .about-back {
-  position: absolute;
+  position: fixed;
   top: 28px;
   left: 32px;
   z-index: 20;
@@ -76,24 +91,53 @@ body:has(.about-page) {
 .about-hero {
   position: relative;
   width: 100%;
-  height: 872px;
+  /* Fill the viewport, but grow if the content is taller than the screen
+     (short laptops / large text) instead of clipping it. The flex layout
+     stretches .about-hero-inner to the full height so its content centres. */
+  min-height: 100svh;
   overflow: hidden;
+  display: flex;
+}
+/* Soft light scrim on the left so the dark hero text stays legible over the
+   photo (the banner art is landscape, so the text can fall on busy areas). */
+.about-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(100deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.22) 34%,
+    rgba(255, 255, 255, 0) 62%);
 }
 .about-hero-img {
   object-fit: cover;
   object-position: center;
   z-index: 0;
+  /* Small base zoom so the scroll parallax (translate) never reveals an edge —
+     kept low so the (landscape) photo is cropped as little as possible.
+     Overridden per-frame by the parallax effect in AboutContent. */
+  transform: scale(1.06);
+  transform-origin: center;
+  will-change: transform;
 }
 .about-hero-inner {
   position: relative;
-  z-index: 1;
-  max-width: 1512px;
+  z-index: 2;
+  flex: 1;
+  /* centred content rail matching the Projects pages (1280 / 24px gutters) */
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 180px 100px 0;
+  /* asymmetric top/bottom inset keeps the text group a touch above centre,
+     leaving the lower portion of the photo (and a sense of "more below"). */
+  padding: 120px 24px 72px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
   gap: 32px;
+  will-change: transform, opacity;
 }
 .about-eyebrow {
   margin: 0;
@@ -119,7 +163,8 @@ body:has(.about-page) {
   color: rgba(0, 0, 0, 0.5);
   line-height: 1.4;
 }
-.about-stats { display: flex; gap: 20px; }
+/* Stat cards: original desktop size, scaled down responsively (see media queries). */
+.about-stats { display: flex; gap: 20px; flex-wrap: wrap; }
 .about-stat {
   width: 216px;
   display: flex;
@@ -131,7 +176,7 @@ body:has(.about-page) {
   backdrop-filter: blur(6px);
   border-radius: 16px;
 }
-.about-stat-icon { display: block; }
+.about-stat-icon { display: block; width: 40px; height: 40px; }
 .about-stat-value {
   margin: 0;
   font-size: 52px;
@@ -150,11 +195,15 @@ body:has(.about-page) {
 /* ── Story + ID card ──────────────────────────────────────────────────────── */
 .about-main {
   position: relative;
-  max-width: 1512px;
+  /* No z-index here: making this a stacking context clipped the overflowing
+     sticky lanyard canvas at the story's bottom edge (the "card gets cut" bug).
+     The lanyard (z-index 6) sits at the root level instead, above the
+     gallery/footer (z-index 1) below — so the card is on top AND uncropped. */
+  /* centred content rail matching the Projects pages (1280 / 24px gutters) so
+     the story lines up with the gallery and footer below. */
+  max-width: 1280px;
   margin: 0 auto;
-  /* 100px gutter so the story text lines up with the gallery image and the
-     footer CTA below (both sit on a 100px / 1312-centred edge). */
-  padding: 0 100px;
+  padding: 0 24px;
   /* Single cell: the story and the lanyard overlay are stacked in the same grid
      area so the (full-width) canvas can float over the text rather than sit in a
      reserved column — that's what lets the card be dragged across the copy. */
@@ -170,6 +219,14 @@ body:has(.about-page) {
   display: flex;
   flex-direction: column;
   gap: 80px;
+}
+/* When the ID card isn't shown (touch tablets, or below the breakpoint) the
+   story becomes a centred, readable column instead of sitting in a 600px strip
+   that leaves the card's old space empty. */
+.about-main--solo .about-story {
+  max-width: 760px;
+  justify-self: center;
+  margin-inline: auto;
 }
 .about-block {
   display: flex;
@@ -208,20 +265,6 @@ body:has(.about-page) {
 .about-prose p + p { margin-top: 1.3em; }
 .about-prose strong { font-weight: 700; color: #3014b8; }
 
-.about-idcard {
-  position: absolute;
-  top: 0;
-  right: 226px;
-  width: 345px;
-}
-.about-idcard-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 16px;
-  filter: drop-shadow(14px 18px 28px rgba(0, 0, 0, 0.18));
-}
-
 /* Interactive lanyard (desktop only). Overlaps the story cell and full-bleeds to
    the entire viewport width (width:100vw + the margin-left trick) so the card is
    never clipped by a container edge and can be dragged anywhere on screen.
@@ -236,23 +279,29 @@ body:has(.about-page) {
   position: sticky;
   top: 0;
   height: 100vh;
-  z-index: 5;
+  /* above the gallery/footer so the card is never painted behind them */
+  z-index: 6;
   pointer-events: none;
 }
 .about-lanyard canvas {
-  cursor: grab !important;
+  /* keep the custom cursor over the draggable card (matches the home canvas) */
+  cursor: none !important;
   touch-action: none;
   /* soft, alpha-aware drop-shadow that follows the card + strap silhouette.
      Kept to a small blur radius: this filter re-runs every frame over the
      full-viewport canvas, so a large blur was a real per-frame cost (jitter). */
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.24));
 }
-.about-lanyard canvas:active { cursor: grabbing !important; }
+.about-lanyard canvas:active { cursor: none !important; }
 
 /* ── Gallery (single image band) ──────────────────────────────────────────── */
 .about-gallery {
   position: relative;
-  max-width: 1312px;
+  /* below the story/lanyard layer so the card can pass over it */
+  z-index: 1;
+  /* 1232 = 1280 rail − 2×24 gutters, so the band's edges line up with the story
+     copy and footer content above/below it. */
+  max-width: 1232px;
   margin: 140px auto 0;
   height: 429px;
   border-radius: 40px;
@@ -261,9 +310,11 @@ body:has(.about-page) {
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 .about-footer {
-  max-width: 1512px;
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 120px 100px 100px;
+  padding: 120px 24px 100px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -301,21 +352,38 @@ body:has(.about-page) {
 .about-contact-item:hover { color: #0a0a0a; }
 .about-contact-item img { display: block; flex-shrink: 0; width: 24px; height: 24px; }
 
-/* ── Responsive fallback (the design is desktop-first) ────────────────────── */
-@media (max-width: 1100px) {
-  .about-hero { height: auto; min-height: 620px; }
-  .about-hero-inner { padding: 110px 40px 60px; gap: 24px; }
+/* ── Responsive fallback (the design is desktop-first) ─────────────────────────
+   Breakpoint at 1200 matches the lanyard cutoff in AboutContent: at/below this
+   the interactive ID card is not rendered at all (no static fallback), so the
+   story simply runs full width with no card to shift or overlap. */
+@media (max-width: 1200px) {
+  .about-hero-inner { padding: 104px 24px 56px; gap: 24px; }
   .about-title { font-size: 46px; }
   .about-subtitle { font-size: 17px; }
-  .about-stats { flex-wrap: wrap; }
-  .about-main { padding: 80px 40px 0; flex-direction: column; gap: 0; }
-  .about-story { flex: none; max-width: none; padding: 0; justify-self: stretch; }
+  .about-main { padding: 80px 24px 0; }
+  /* card is always hidden here → story is the centred column from --solo */
+  .about-story { padding: 0; gap: 56px; }
   .about-block-title { font-size: 24px; }
   .about-prose { font-size: 17px; }
-  .about-idcard { position: static; width: 260px; margin: 48px auto 0; right: auto; }
-  .about-gallery { margin-inline: 40px; max-width: none; height: 320px; }
-  .about-footer { flex-direction: column; align-items: flex-start; gap: 28px; padding: 80px 40px 64px; }
+  .about-gallery { margin: 88px 24px 0; max-width: none; height: 320px; }
+  /* extra breathing room between the CTA and the contact block when stacked */
+  .about-footer { flex-direction: column; align-items: flex-start; gap: 48px; padding: 80px 24px 64px; }
   .about-cta { font-size: 34px; }
   .about-contact { flex-direction: column; align-items: flex-start; gap: 16px; }
   .about-contact-item { font-size: 18px; }
+  /* stat cards step down a size */
+  .about-stats { gap: 16px; }
+  .about-stat { width: 180px; padding: 14px; gap: 6px; }
+  .about-stat-icon { width: 34px; height: 34px; }
+  .about-stat-value { font-size: 42px; }
+  .about-stat-label { font-size: 14px; }
+}
+
+/* phones: two compact stat cards per row so the hero stays tidy */
+@media (max-width: 560px) {
+  .about-stats { gap: 10px; }
+  .about-stat { width: calc(50% - 5px); padding: 12px; }
+  .about-stat-icon { width: 28px; height: 28px; }
+  .about-stat-value { font-size: 34px; }
+  .about-stat-label { font-size: 12px; }
 }

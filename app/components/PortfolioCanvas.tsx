@@ -1062,7 +1062,10 @@ export default function PortfolioCanvas() {
 
       {/* ── GP Panel ──────────────────────────────────────────────────────── */}
       <div id="gp-panel" ref={gpPanelRef} role="dialog" aria-label="Good Problems" aria-modal="true">
-        <button id="gp-close" onClick={handleCloseGp} aria-label="Close">✕</button>
+        <button id="gp-close" onClick={handleCloseGp} aria-label="Close">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/close.svg" alt="Close" width={18} height={18} />
+        </button>
         <div className="gp-eyebrow">Good Problems</div>
         <div className="gp-title">Problems worth admiring.</div>
         <div className="gp-intro">I&apos;m fascinated by problems that were solved in ways nobody expected. Not interface problems — real world ones. The kind that reveal something true about how people think and behave.</div>
@@ -1079,8 +1082,14 @@ export default function PortfolioCanvas() {
             </>
           )}
         </div>
-        <hr className="gp-divider" />
-        <button id="gp-shuffle" onClick={handleGpShuffle}>↻ Another one</button>
+        <div className="gp-footer">
+          <hr className="gp-divider" />
+          <button id="gp-shuffle" onClick={handleGpShuffle}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/reset-chat.svg" alt="" aria-hidden="true" width={16} height={16} />
+            Another one
+          </button>
+        </div>
       </div>
 
       {/* ── Contact Panel ─────────────────────────────────────────────────── */}
