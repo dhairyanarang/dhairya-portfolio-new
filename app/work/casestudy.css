@@ -39,7 +39,7 @@ body:has(.cs-page) {
      make this element a containing block for the position:fixed back button
      (while the animation fill is active), so the button would scroll with the
      page. The per-element reveal-on-scroll supplies the upward motion instead. */
-  animation: cs-page-in 0.5s ease both;
+  animation: cs-page-in 0.35s ease both;
 }
 .cs-page.is-leaving {
   animation: cs-page-out 0.35s ease both;

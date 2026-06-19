@@ -24,7 +24,7 @@ body:has(.work-page) {
   /* Open transition (runs on mount) — matches the About page. Opacity-only ON
      PURPOSE so the page root never becomes a containing block for the
      position:fixed back button (otherwise it scrolls with the page). */
-  animation: work-page-in 0.5s ease both;
+  animation: work-page-in 0.35s ease both;
 }
 /* Close transition — toggled from WorkContent just before navigating home. */
 .work-page.is-leaving {

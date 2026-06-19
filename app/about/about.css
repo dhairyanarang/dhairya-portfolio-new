@@ -29,7 +29,7 @@ body:has(.about-page) {
      page root would create a containing block for the position:fixed back button
      (it would then scroll with the page) and could disturb the sticky lanyard.
      The hero reveal + parallax provide the motion. */
-  animation: about-page-in 0.5s ease both;
+  animation: about-page-in 0.35s ease both;
 }
 /* Close transition — toggled from AboutContent just before navigating home. */
 .about-page.is-leaving {

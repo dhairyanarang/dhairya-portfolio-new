@@ -54,8 +54,10 @@ export default function AboutContent() {
           io.disconnect()
         }
       },
-      // fire once the lanyard column is meaningfully in view so the drop is seen
-      { rootMargin: '0px 0px -25% 0px' },
+      // fire as soon as the lanyard column starts entering the viewport (a small
+      // positive bottom margin triggers slightly early) so the drop plays the
+      // moment the user scrolls to it, not after it's well past the fold.
+      { rootMargin: '0px 0px 12% 0px' },
     )
     io.observe(el)
     return () => io.disconnect()

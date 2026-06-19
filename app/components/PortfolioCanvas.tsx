@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { gsap } from 'gsap'
 import { Draggable } from 'gsap/Draggable'
@@ -151,6 +152,7 @@ export default function PortfolioCanvas() {
   const [aiLoading, setAiLoading] = useState(false)
   const [showIntro, setShowIntro] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false) // mobile-only hamburger menu
+  const router = useRouter() // client-side navigation (faster than full <a> reloads)
   const cachedContextRef = useRef<string | null>(null)
 
   const ghostGenRef   = useRef(0)
@@ -175,6 +177,19 @@ export default function PortfolioCanvas() {
     const id = setInterval(update, 1000)
     return () => clearInterval(id)
   }, [])
+
+  // ── Close the mobile menu on an outside tap/click ───────────────────────────
+  useEffect(() => {
+    if (!menuOpen) return
+    const onDown = (e: Event) => {
+      const t = e.target as Node
+      const menu = document.getElementById('mobile-menu')
+      const btn = document.getElementById('mobile-menu-btn')
+      if (menu && !menu.contains(t) && btn && !btn.contains(t)) setMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [menuOpen])
 
   // ── GP helpers ────────────────────────────────────────────────────────────
   const shuffleGpOrder = useCallback(() => {
@@ -272,6 +287,13 @@ export default function PortfolioCanvas() {
       btn.classList.toggle('visible', dist > 100)
     }
 
+    // Touch/small-screen flag (mobile + tablet). Used to (a) give the scattered
+    // canvas pieces a larger drag threshold so a TAP still fires its link/panel
+    // while a real swipe still DRAGS, and (b) hand 2-finger gestures to the
+    // browser for native pinch-zoom. Desktop (mouse) is unaffected.
+    const isTouch = window.matchMedia('(max-width: 1024px)').matches
+    const stickyMinMove = isTouch ? 8 : 2
+
     // ── Canvas draggable ──
     let dragDistance = 0, dragStartX = 0, dragStartY = 0
 
@@ -301,6 +323,22 @@ export default function PortfolioCanvas() {
     })
 
     canvas.addEventListener('click', (e) => { if (dragDistance > 5) e.preventDefault() })
+
+    // Native pinch-zoom on touch: the canvas Draggable preventDefaults touch
+    // moves (needed for the pan), which also blocks the browser's pinch. When a
+    // second finger lands we hand the gesture to the browser by disabling the
+    // pan, then restore it once all fingers lift. Touch-only — never runs with a
+    // mouse, so desktop panning is untouched.
+    const onCanvasMultiTouch = (e: TouchEvent) => {
+      if (e.touches.length >= 2) Draggable.get(canvas)?.disable()
+    }
+    const onTouchEndRestore = (e: TouchEvent) => {
+      if (e.touches.length === 0 && !panelIsOpenRef.current) Draggable.get(canvas)?.enable()
+    }
+    if (isTouch) {
+      canvas.addEventListener('touchstart', onCanvasMultiTouch, { passive: true, capture: true })
+      document.addEventListener('touchend', onTouchEndRestore, { passive: true })
+    }
 
     // ── Cursor tracking ──
     const handleMouseMove = (e: MouseEvent) => {
@@ -493,7 +531,7 @@ export default function PortfolioCanvas() {
       polaroid.addEventListener('pointerdown', e => e.stopPropagation())
       polaroid.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
       Draggable.create(polaroid, {
-        type: 'x,y', inertia: true,
+        type: 'x,y', inertia: true, minimumMovement: stickyMinMove,
         onPress() { polDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); polDragDist = 0; polStartX = this.x; polStartY = this.y; gsap.to(polaroid, { rotation: -3, duration: 0.2 }) },
         onDrag() {
@@ -502,7 +540,7 @@ export default function PortfolioCanvas() {
         },
         onDragEnd() { Draggable.get(canvas)?.enable(); gsap.to(polaroid, { rotation: -10, duration: 0.4, ease: 'elastic.out(1,0.6)' }) }
       })
-      polaroid.addEventListener('click', e => { if (polDragDist > 5) e.preventDefault() })
+      polaroid.addEventListener('click', e => { e.preventDefault(); if (polDragDist <= 5) router.push('/about') })
     }
 
     // ── Project deck fan ──
@@ -532,7 +570,7 @@ export default function PortfolioCanvas() {
       deck.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
       let deckDragDist = 0, deckStartX = 0, deckStartY = 0
       Draggable.create(deck, {
-        type: 'x,y', inertia: true,
+        type: 'x,y', inertia: true, minimumMovement: stickyMinMove,
         onPress() { deckDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); anyDragActiveRef.current = true; deckDragDist = 0; deckStartX = this.x; deckStartY = this.y; gsap.to(deck, { rotation: 3, duration: 0.2 }) },
         onDrag() {
@@ -541,7 +579,7 @@ export default function PortfolioCanvas() {
         },
         onDragEnd() { Draggable.get(canvas)?.enable(); anyDragActiveRef.current = false; gsap.to(deck, { rotation: 0, duration: 0.4, ease: 'elastic.out(1,0.6)' }) }
       })
-      d1.addEventListener('click', e => { if (deckDragDist > 5) e.preventDefault() })
+      d1.addEventListener('click', e => { e.preventDefault(); if (deckDragDist <= 5) router.push('/work') })
     }
 
     // ── Contact sticker draggable ──
@@ -552,7 +590,7 @@ export default function PortfolioCanvas() {
       c.addEventListener('pointerdown', e => e.stopPropagation())
       c.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
       Draggable.create(c, {
-        type: 'x,y', inertia: true,
+        type: 'x,y', inertia: true, minimumMovement: stickyMinMove,
         onPress() { cDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); cDragDist = 0; cStartX = this.x; cStartY = this.y; gsap.to(c, { rotation: 5, duration: 0.2 }) },
         onDrag() {
@@ -572,7 +610,7 @@ export default function PortfolioCanvas() {
       gp.addEventListener('pointerdown', e => e.stopPropagation())
       gp.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
       Draggable.create(gp, {
-        type: 'x,y', inertia: true,
+        type: 'x,y', inertia: true, minimumMovement: stickyMinMove,
         onPress() { gpDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); gpDragDist = 0; gpStartX = this.x; gpStartY = this.y; gsap.to(gp, { rotation: 2, duration: 0.2 }) },
         onDrag() {
@@ -608,8 +646,8 @@ export default function PortfolioCanvas() {
       const overlay = blurOverlayRef.current, panel = gpPanelRef.current
       if (!overlay || !panel) return
       gsap.timeline()
-        .to(panel, { x: '100%', duration: 0.4, ease: 'power3.in' }, 0)
-        .to(overlay, { opacity: 0, duration: 0.25, ease: 'power2.in' }, 0.1)
+        .to(panel, { x: '100%', duration: 0.26, ease: 'power2.in' }, 0)
+        .to(overlay, { opacity: 0, duration: 0.18, ease: 'power1.in' }, 0.02)
         .set(overlay, { display: 'none' })
     }
 
@@ -641,8 +679,8 @@ export default function PortfolioCanvas() {
       const overlay = blurOverlayRef.current, panel = aiPanelRef.current
       if (!overlay || !panel) return
       gsap.timeline()
-        .to(panel, { x: '100%', duration: 0.4, ease: 'power3.in' }, 0)
-        .to(overlay, { opacity: 0, duration: 0.25, ease: 'power2.in' }, 0.1)
+        .to(panel, { x: '100%', duration: 0.26, ease: 'power2.in' }, 0)
+        .to(overlay, { opacity: 0, duration: 0.18, ease: 'power1.in' }, 0.02)
         .set(overlay, { display: 'none' })
     }
 
@@ -671,8 +709,8 @@ export default function PortfolioCanvas() {
       const overlay = blurOverlayRef.current, panel = contactPanelRef.current
       if (!overlay || !panel) return
       gsap.timeline()
-        .to(panel, { x: '100%', duration: 0.4, ease: 'power3.in' }, 0)
-        .to(overlay, { opacity: 0, duration: 0.25, ease: 'power2.in' }, 0.1)
+        .to(panel, { x: '100%', duration: 0.26, ease: 'power2.in' }, 0)
+        .to(overlay, { opacity: 0, duration: 0.18, ease: 'power1.in' }, 0.02)
         .set(overlay, { display: 'none' })
     }
     ;(window as any).__openContactPanel = openContactPanel
@@ -801,15 +839,6 @@ export default function PortfolioCanvas() {
         .to('#ask-ai-btn',  { opacity: 1, duration: 0.3 }, 1.4)
     }
 
-    // On mobile/tablet, the scattered canvas pieces should be reliably TAPPABLE
-    // rather than draggable (touch jitter otherwise trips the drag threshold and
-    // eats the tap). Disabling their Draggables lets the native link/panel click
-    // fire; the canvas itself stays pannable. Touch-only — desktop is untouched.
-    if (window.matchMedia('(max-width: 1024px)').matches) {
-      ;[polaroidRef.current, projectDeckRef.current, contactRef.current, gpStickerRef.current]
-        .forEach(el => { if (el) Draggable.get(el)?.disable() })
-    }
-
     return () => {
       // Fully tear down everything this effect created. Without this, Fast
       // Refresh / Strict-Mode re-mounts stack duplicate Draggables and stale
@@ -820,6 +849,8 @@ export default function PortfolioCanvas() {
 
       document.removeEventListener('wheel', handleWheel)
       document.removeEventListener('mousemove', handleMouseMove)
+      canvas.removeEventListener('touchstart', onCanvasMultiTouch, true)
+      document.removeEventListener('touchend', onTouchEndRestore)
       if (overlayEl) overlayEl.removeEventListener('click', handleOverlayClick)
 
       // Cancel any in-flight ghost-cursor sequence (its pending delayedCalls

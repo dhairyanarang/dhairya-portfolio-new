@@ -930,14 +930,16 @@ html, body {
      inline touch-action:none that GSAP Draggable applies for the pan. */
   #canvas { touch-action: pinch-zoom !important; }
 
-  /* Hero subtext: larger, wrapping, and constrained so it never overflows. */
+  /* Hero subtext: larger, wrapping, constrained, and pulled up closer to the
+     name (the default +188px offset sits too far below on small screens). */
   #hero-tagline {
     flex-wrap: wrap;
     white-space: normal;
-    max-width: 320px;
+    max-width: 330px;
     gap: 6px;
+    top: calc(50% + 128px);
   }
-  #hero-tagline-text { font-size: 19px; line-height: 1.4; white-space: normal; }
+  #hero-tagline-text { font-size: 22px; line-height: 1.35; white-space: normal; }
   #hero-tagline img { display: none; } /* decorative flanking lines */
 
   /* Side panels fill the screen; 100dvh + safe-area keep content clear of the
