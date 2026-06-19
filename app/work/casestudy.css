@@ -787,9 +787,11 @@ body:has(.cs-page) {
    so only the photo shows. The hover-scale still rides on .cs-ph (see above). */
 .cs-ph--img { background: none; border: none; }
 .cs-ph-img { object-fit: cover; }
-/* Hero photo is a composed 2240×1360 render — match it so nothing is cropped. */
+/* Hero photo is a composed ~1.65:1 render — match it so nothing is cropped. */
 .cs-page--era .cs-hero-media .cs-ph--hero,
-.cs-page--onekey .cs-hero-media .cs-ph--hero { aspect-ratio: 2240 / 1360; }
+.cs-page--onekey .cs-hero-media .cs-ph--hero,
+.cs-page--myroom .cs-hero-media .cs-ph--hero,
+.cs-page--ono .cs-hero-media .cs-ph--hero { aspect-ratio: 2240 / 1360; }
 
 /* Two-column meta cards carrying a label + a descriptive line (ERA "My Role",
    OneKey "Building Beyond Design"). */
@@ -802,9 +804,12 @@ body:has(.cs-page) {
 .cs-page--era .cs-meta-card dd,
 .cs-page--onekey .cs-meta-card dd { font-weight: 400; line-height: 1.5; color: var(--muted); }
 
-/* Design Opportunities: real reference app icons fill the logo chip. */
-.cs-page--era .cs-logo { display: block; overflow: hidden; background: none; border: none; }
-.cs-page--era .cs-logo-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Comparison tables: real reference logos fill the logo chip (ERA app icons,
+   MyRoom brand marks). */
+.cs-page--era .cs-logo,
+.cs-page--myroom .cs-logo { display: block; overflow: hidden; background: none; border: none; }
+.cs-page--era .cs-logo-img,
+.cs-page--myroom .cs-logo-img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 /* Icon card (OneKey "Ecosystem"): a small line icon sits above the card title. */
 .cs-card-icon { display: block; width: 26px; height: 26px; margin-bottom: 6px; }
@@ -814,8 +819,8 @@ body:has(.cs-page) {
 .cs-screens-group:first-of-type { margin-top: 44px; }
 .cs-screens-title { margin: 0 0 28px; font-size: 24px; font-weight: 500; color: var(--ink); }
 .cs-screens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
-/* Single-column variant for wide device mockups (Watch / Mac). */
-.cs-screens--single { grid-template-columns: 1fr; gap: 24px; max-width: 920px; }
+/* Single-column variant for wide device mockups (Watch / Mac) — fills the rail. */
+.cs-screens--single { grid-template-columns: 1fr; gap: 24px; }
 /* No overflow clip: the device PNGs already carry their own rounded corners, so
    the hover scale grows into the gap instead of being cropped at the edges. */
 .cs-screen { position: relative; border-radius: 24px; }
@@ -860,6 +865,62 @@ body:has(.cs-page) {
 }
 .cs-ladder-label { font-size: 17px; font-weight: 500; color: var(--ink); }
 .cs-ladder-note { margin: 22px 0 0; font-size: 15px; font-style: italic; line-height: 1.5; color: var(--muted-2); }
+
+/* ── Full-width flow variant (MyRoom Information Architecture) ────────────────
+   The default .cs-flow is a narrow 560px rail; this lets the steps run the full
+   width of the container and stay responsive. */
+.cs-flow--wide { max-width: none; }
+
+/* ── Annotated walkthrough (MyRoom Visual Execution) ─────────────────────────
+   A tall product screenshot beside a column of callouts. On desktop the notes
+   spread to track the screenshot's folds; on mobile the shot becomes a capped
+   scroll frame with the notes flowing beneath. */
+.cs-annotate {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 330px) 1fr;
+  gap: 56px;
+  align-items: stretch;
+}
+.cs-annotate-visual {
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid var(--line-soft);
+  align-self: start;
+}
+.cs-annotate-img { display: block; width: 100%; height: auto; }
+.cs-annotate-notes {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 30px;
+}
+.cs-annotate-note {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 18px;
+  border-left: 2px solid rgba(224, 30, 90, 0.25);
+}
+.cs-annotate-note-title { margin: 0; font-size: 18px; font-weight: 500; color: var(--ink); }
+.cs-annotate-note-text { margin: 0; font-size: 15px; font-weight: 400; line-height: 1.55; color: var(--muted); }
+.cs-compare-notes {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+/* ── Annotated design diagram (ONO "Inside mOS" / "Inside CASH") ──────────────
+   A single dense infographic image. Full-width on desktop; on narrow screens it
+   keeps a readable min-width and the wrapper scrolls horizontally instead of
+   shrinking the callouts into illegibility. */
+.cs-diagram { margin-top: 28px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.cs-diagram-img { display: block; width: 100%; height: auto; min-width: 680px; }
+
+/* ── Numbered phone flow (ONO Navigation Exploration) ────────────────────────
+   A row of device shots beneath the option cards; reuses the .cs-screen hover. */
+.cs-navflow { margin-top: 28px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 1000px) {
@@ -906,6 +967,12 @@ body:has(.cs-page) {
   .cs-contact { flex-direction: column; align-items: flex-start; gap: 16px; }
   /* Tablet keeps the design's 3-up screen grid; phones drop to 2-up below. */
   .cs-screens-group { margin-top: 44px; }
+  /* Annotated walkthrough stacks: the tall shot becomes a capped scroll frame. */
+  .cs-annotate { grid-template-columns: 1fr; gap: 24px; }
+  .cs-annotate-visual { max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .cs-annotate-notes { justify-content: flex-start; }
+  .cs-compare-notes { grid-template-columns: 1fr; gap: 20px; }
+  .cs-navflow { grid-template-columns: repeat(2, 1fr); gap: 16px; }
 }
 
 /* Phones — collapse the multi-column image-led layouts to stay legible. */

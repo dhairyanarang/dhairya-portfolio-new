@@ -150,6 +150,7 @@ export default function PortfolioCanvas() {
   const [aiInput, setAiInput] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [showIntro, setShowIntro] = useState(true)
+  const [menuOpen, setMenuOpen] = useState(false) // mobile-only hamburger menu
   const cachedContextRef = useRef<string | null>(null)
 
   const ghostGenRef   = useRef(0)
@@ -676,6 +677,7 @@ export default function PortfolioCanvas() {
     }
     ;(window as any).__openContactPanel = openContactPanel
     ;(window as any).__closeContactPanel = closeContactPanel
+    ;(window as any).__openGpPanel = openGpPanel // used by the mobile menu
 
     // Clicking the dimmed overlay (anywhere outside the panel) closes the open
     // panel. The overlay also captures pointer events while visible, so canvas
@@ -989,6 +991,31 @@ export default function PortfolioCanvas() {
       <div id="fixed-top-left">DHAIRYA NARANG</div>
       <div id="fixed-top-right" ref={fixedTopRightRef}>{clockText}</div>
       <button id="canvas-reset" ref={canvasResetRef}>FIND MY WAY BACK</button>
+
+      {/* ── Mobile hamburger menu (small screens only; hidden on desktop via CSS).
+            Reuses the existing panel-open functions and canvas routes so taps are
+            reliable without fighting the drag-canvas. ─────────────────────────── */}
+      <button
+        id="mobile-menu-btn"
+        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((o) => !o)}
+      >
+        {menuOpen ? (
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="#0A0A0A" strokeWidth="1.8" strokeLinecap="round" /></svg>
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M3 6h16M3 11h16M3 16h16" stroke="#0A0A0A" strokeWidth="1.8" strokeLinecap="round" /></svg>
+        )}
+      </button>
+      {menuOpen && (
+        <nav id="mobile-menu" aria-label="Primary">
+          <a className="mobile-menu-item" href="/work">Projects</a>
+          <a className="mobile-menu-item" href="/about">About</a>
+          <button className="mobile-menu-item" onClick={() => { setMenuOpen(false); (window as any).__openGpPanel?.() }}>Good Problems</button>
+          <button className="mobile-menu-item" onClick={() => { setMenuOpen(false); (window as any).__openContactPanel?.() }}>Contact</button>
+          <button className="mobile-menu-item" onClick={() => { setMenuOpen(false); (window as any).__openAiPanel?.() }}>Ask AI</button>
+        </nav>
+      )}
 
       {/* ── Custom cursor ─────────────────────────────────────────────────── */}
       <div id="cursor-arrow" ref={cursorArrowRef}><CursorArrowSVG /></div>

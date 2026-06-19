@@ -868,6 +868,80 @@ html, body {
   pointer-events: none;
 }
 
+/* ── Mobile hamburger menu (home) ───────────────────────────────────────────
+   Hidden on desktop (display:none). Shown only inside the ≤768px media query
+   below, so the laptop experience is never affected. */
+#mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 18px; right: 18px;
+  z-index: 950;
+  width: 44px; height: 44px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+#mobile-menu {
+  display: none;
+  position: fixed;
+  top: 70px; right: 18px;
+  z-index: 950;
+  flex-direction: column;
+  min-width: 208px;
+  padding: 6px;
+  background: #F5F2EC;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 14px;
+  box-shadow: 0 10px 34px rgba(0,0,0,0.16);
+}
+.mobile-menu-item {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #0A0A0A;
+  text-align: left;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  width: 100%;
+  display: block;
+}
+.mobile-menu-item:active { background: rgba(0,0,0,0.06); }
+
 @media (max-width: 768px) {
+  /* Non-home pages already hide the cursor tag here. */
   #cursor-tag { display: none; }
+
+  /* ── Home (canvas) mobile cleanup ─────────────────────────────────────── */
+  /* Green canvas cursor — pointer-driven only, useless on touch. */
+  #cursor-arrow, #cursor-tag { display: none; }
+  /* "Delhi, IND — time" readout (collides with the name on narrow screens). */
+  #fixed-top-right { display: none; }
+  /* Left-edge tool stack. */
+  #tool-stack { display: none; }
+
+  /* Hero subtext: let it wrap + shrink so it never leaves the viewport. */
+  #hero-tagline {
+    flex-wrap: wrap;
+    white-space: normal;
+    max-width: 300px;
+    gap: 6px;
+  }
+  #hero-tagline-text { font-size: 15px; line-height: 1.4; white-space: normal; }
+  #hero-tagline img { display: none; } /* decorative flanking lines */
+
+  /* Side panels fill the screen instead of overflowing it. */
+  #ai-panel, #gp-panel, #contact-panel { width: 100%; max-width: 100%; }
+  #gp-panel, #contact-panel { padding: 32px 20px; }
+
+  /* Reveal the hamburger menu. */
+  #mobile-menu-btn { display: flex; }
+  #mobile-menu { display: flex; }
 }

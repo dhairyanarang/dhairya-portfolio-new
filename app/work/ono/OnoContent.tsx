@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import '../casestudy.css'
 
 // ── Content (source of truth = the ONO spec) ────────────────────────────────
@@ -47,8 +48,6 @@ const MOS_DECISIONS = [
   { title: 'Business goals aligned with user goals', problem: 'Growth targets could have meant pushy cross-sell.', decision: 'Make discovery helpful, never promotional.', reason: 'Adoption sticks when it genuinely serves the user.' },
 ]
 
-const MOS_SHOTS = ['Dashboard', 'Smartboard', 'Profile', 'Product Navigation']
-
 const NAV_OPTIONS = [
   { title: 'Tab Navigation', flag: 'Problem', text: 'Not scalable as the product set grew.', chosen: false },
   { title: 'Hamburger Menu', flag: 'Problem', text: 'Poor discoverability — options stayed hidden.', chosen: false },
@@ -69,8 +68,6 @@ const CASH_DECISIONS = [
   { title: 'Increase repayment visibility', problem: 'Users couldn’t tell what was due or already paid.', decision: 'Make repayment timelines explicit and scannable.', reason: 'Clarity around money builds trust.' },
   { title: 'Reduce dependency on support', problem: 'Every small question became a support call.', decision: 'Add self-service status and history.', reason: 'Self-serve answers scale; support calls don’t.' },
 ]
-
-const CASH_SHOTS = ['Smartboard', 'Loans', 'Applications', 'Search', 'Filters', 'Loan Cards']
 
 const SYSTEMS = [
   { title: 'Ecosystems are products too.', text: 'The connective tissue between apps needed as much care as any single screen.' },
@@ -177,7 +174,7 @@ export default function OnoContent() {
   }
 
   return (
-    <main className="cs-page">
+    <main className="cs-page cs-page--ono">
       <div className="cs-progress" aria-hidden="true"><i /></div>
 
       <Link href="/work" className="cs-back" aria-label="Back to Projects" onClick={handleBack}>
@@ -199,7 +196,16 @@ export default function OnoContent() {
           {TAGS.map((t) => <span className="cs-tag" key={t}>{t}</span>)}
         </div>
         <div className="cs-hero-media reveal cs-hoverable" style={delay(0.24)}>
-          <div className="cs-ph cs-ph--hero" data-label="ONO ecosystem · 1600 × 900" />
+          <div className="cs-ph cs-ph--hero cs-ph--img">
+            <Image
+              src="/work/ono/hero.png"
+              alt="ONO — agri-commerce ecosystem case study"
+              fill
+              priority
+              sizes="(max-width: 1000px) 100vw, 1120px"
+              className="cs-ph-img"
+            />
+          </div>
         </div>
       </header>
 
@@ -296,13 +302,15 @@ export default function OnoContent() {
         </div>
 
         <h3 className="cs-eyebrow reveal" style={{ marginTop: 56 }}>Inside mOS</h3>
-        <div className="cs-shots reveal" style={delay(0.06)}>
-          {MOS_SHOTS.map((s) => (
-            <div className="cs-shot cs-hoverable" key={s}>
-              <div className="cs-ph" data-label="Screen" />
-              <span className="cs-shot-cap">{s}</span>
-            </div>
-          ))}
+        <div className="cs-diagram reveal" style={delay(0.06)}>
+          <Image
+            src="/work/ono/mos-inside.png"
+            alt="Inside mOS — annotated breakdown of the dashboard, product switcher, smartboard and profile"
+            width={2240}
+            height={2893}
+            sizes="(max-width: 1000px) 680px, 1120px"
+            className="cs-diagram-img"
+          />
         </div>
       </section>
 
@@ -319,6 +327,21 @@ export default function OnoContent() {
                   <h3 className="cs-card-title">{o.title}</h3>
                   <p className="cs-card-text">{o.text}</p>
                 </article>
+              </div>
+            ))}
+          </div>
+          <div className="cs-navflow reveal" style={delay(0.14)}>
+            {['nav-1', 'nav-2', 'nav-3', 'nav-4'].map((n) => (
+              <div className="cs-screen cs-hoverable" key={n}>
+                <Image
+                  src={`/work/ono/${n}.png`}
+                  alt=""
+                  aria-hidden="true"
+                  width={457}
+                  height={1203}
+                  sizes="(max-width: 1000px) 45vw, 260px"
+                  className="cs-screen-img"
+                />
               </div>
             ))}
           </div>
@@ -354,23 +377,25 @@ export default function OnoContent() {
         <h3 className="cs-eyebrow reveal" style={{ marginTop: 56 }}>Before &amp; After</h3>
         <div className="cs-ba reveal" style={delay(0.06)}>
           <div className="cs-ba-item cs-hoverable">
-            <div className="cs-ph" data-label="1600 × 900" />
+            <Image src="/work/ono/before.png" alt="CASH — before the redesign" width={784} height={1085} sizes="(max-width: 1000px) 100vw, 560px" className="cs-screen-img" />
             <span className="cs-ba-label">Before</span>
           </div>
           <div className="cs-ba-item cs-ba-item--after cs-hoverable">
-            <div className="cs-ph" data-label="1600 × 900" />
+            <Image src="/work/ono/after.png" alt="CASH — after the redesign" width={784} height={1085} sizes="(max-width: 1000px) 100vw, 560px" className="cs-screen-img" />
             <span className="cs-ba-label">After</span>
           </div>
         </div>
 
         <h3 className="cs-eyebrow reveal" style={{ marginTop: 56 }}>Inside CASH</h3>
-        <div className="cs-shots cs-shots--3 reveal" style={delay(0.06)}>
-          {CASH_SHOTS.map((s) => (
-            <div className="cs-shot cs-hoverable" key={s}>
-              <div className="cs-ph" data-label="Screen" />
-              <span className="cs-shot-cap">{s}</span>
-            </div>
-          ))}
+        <div className="cs-diagram reveal" style={delay(0.06)}>
+          <Image
+            src="/work/ono/cash-inside.png"
+            alt="Inside CASH — annotated breakdown of the smartboard, loans and applications screens"
+            width={2240}
+            height={4466}
+            sizes="(max-width: 1000px) 680px, 1120px"
+            className="cs-diagram-img"
+          />
         </div>
       </section>
 
@@ -431,11 +456,8 @@ export default function OnoContent() {
       {/* ── 12 · NEXT PROJECT ────────────────────────────────────────────── */}
       <section className="cs-wrap cs-section cs-section--tight">
         <p className="cs-eyebrow reveal">Next Project</p>
-        <Link href="/work/myroom" className="cs-next reveal cs-hoverable" style={delay(0.05)}>
+        <Link href="/work/myroom" className="cs-next reveal" style={delay(0.05)}>
           <div className="cs-next-inner">
-            <div className="cs-next-media">
-              <div className="cs-ph" data-label="MyRoom" />
-            </div>
             <div>
               <span className="cs-next-label">Case Study</span>
               <p className="cs-next-title">MyRoom</p>

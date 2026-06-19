@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import '../casestudy.css'
 
 // ── Content (source of truth = the MyRoom spec) ─────────────────────────────
@@ -44,9 +45,9 @@ const INSIGHTS = [
 ]
 
 const MARKET = [
-  { name: 'Airbnb', strength: 'Polished discovery and booking.', gap: 'Built for short stays, not long-term living.', opportunity: 'Own long-term trust and transparency.' },
-  { name: 'Stanza Living', strength: 'Managed living at scale.', gap: 'Limited choice and flexibility.', opportunity: 'Give users real, comparable options.' },
-  { name: 'Zolo', strength: 'Wide inventory of PGs.', gap: 'Thin on trust and clarity.', opportunity: 'Lead with verification and cost clarity.' },
+  { name: 'Airbnb', logo: 'airbnb-logo', strength: 'Polished discovery and booking.', gap: 'Built for short stays, not long-term living.', opportunity: 'Own long-term trust and transparency.' },
+  { name: 'Stanza Living', logo: 'stanza-logo', strength: 'Managed living at scale.', gap: 'Limited choice and flexibility.', opportunity: 'Give users real, comparable options.' },
+  { name: 'Zolo', logo: 'zolo-logo', strength: 'Wide inventory of PGs.', gap: 'Thin on trust and clarity.', opportunity: 'Lead with verification and cost clarity.' },
 ]
 
 const JOURNEY = ['Discover', 'Compare', 'Evaluate', 'Trust', 'Book']
@@ -63,25 +64,12 @@ const IA = [
   { name: 'Profile', note: 'Manage everything in one place.' },
 ]
 
-const FEATURES = [
-  { title: 'Explore', text: 'Commute-first discovery.' },
-  { title: 'Compare', text: 'Side-by-side decisions.' },
-  { title: 'Map View', text: 'Evaluate neighbourhoods visually.' },
-  { title: 'Wishlist', text: 'Reduce decision fatigue.' },
-  { title: 'Messages', text: 'Build trust through conversation.' },
-]
+// ── Section 09 · Visual Execution ───────────────────────────────────────────
+const COMPARE_SHOTS = ['compare-1', 'compare-2', 'compare-3']
 
-const PDP = [
-  { q: 'Can I trust this place?', items: ['Verified photos', '360° views', 'Owner profile'] },
-  { q: 'Can I afford this place?', items: ['Rent', 'Deposit', 'Refund', 'Cost breakdown'] },
-  { q: 'Will I feel comfortable here?', items: ['Meals', 'Amenities', 'Neighbourhood', 'Safety'] },
-  { q: 'Can I live here long-term?', items: ['Commute', 'Nearby essentials', 'Reviews', 'Availability'] },
-]
-
-const VALIDATION = [
-  { kicker: 'Live Sessions', title: '4 participants', text: 'In-person, observed walkthroughs.' },
-  { kicker: 'Remote Sessions', title: '8 participants', text: 'Unmoderated, at-home flows.' },
-  { kicker: 'Key Learning', title: 'Map pins confused users', text: 'Resolved by updating the map labels for clarity.' },
+const COMPARE_NOTES = [
+  { title: 'Compare', text: 'Users can compare PGs on rent, safety score, amenities and more — tapping compare, then choosing the property to weigh it against.' },
+  { title: 'Side-by-side view', text: 'A side-by-side layout highlights the key differences across rent, security, safety score and amenities at a glance.' },
 ]
 
 const REFLECTION = [
@@ -153,7 +141,7 @@ export default function MyRoomContent() {
   }
 
   return (
-    <main className="cs-page">
+    <main className="cs-page cs-page--myroom">
       <div className="cs-progress" aria-hidden="true"><i /></div>
 
       <Link href="/work" className="cs-back" aria-label="Back to Projects" onClick={handleBack}>
@@ -175,7 +163,16 @@ export default function MyRoomContent() {
           {TAGS.map((t) => <span className="cs-tag" key={t}>{t}</span>)}
         </div>
         <div className="cs-hero-media reveal cs-hoverable" style={delay(0.24)}>
-          <div className="cs-ph cs-ph--hero" data-label="Explore · Property · Map · 1600 × 900" />
+          <div className="cs-ph cs-ph--hero cs-ph--img">
+            <Image
+              src="/work/myroom/hero.png"
+              alt="MyRoom — trust-first accommodation case study"
+              fill
+              priority
+              sizes="(max-width: 1000px) 100vw, 1120px"
+              className="cs-ph-img"
+            />
+          </div>
         </div>
       </header>
 
@@ -274,7 +271,10 @@ export default function MyRoomContent() {
           {MARKET.map((m) => (
             <div className="cs-compare-row" key={m.name}>
               <div className="cs-compare-ref">
-                <span className="cs-logo" aria-hidden="true" />
+                <span className="cs-logo">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="cs-logo-img" src={`/work/myroom/${m.logo}.png`} alt={`${m.name} logo`} width={44} height={44} />
+                </span>
                 <span className="cs-compare-name">{m.name}</span>
               </div>
               <div className="cs-compare-cell">{m.strength}</div>
@@ -301,11 +301,11 @@ export default function MyRoomContent() {
         </div>
       </section>
 
-      {/* ── 8 · INFORMATION ARCHITECTURE ─────────────────────────────────── */}
+      {/* ── 8 · INFORMATION ARCHITECTURE (full-width flow) ───────────────── */}
       <section className="cs-wrap cs-section">
         <p className="cs-eyebrow reveal">08 / Information Architecture</p>
         <h2 className="cs-h2 reveal" style={delay(0.05)}>The full journey, mapped end to end.</h2>
-        <div className="cs-flow reveal" style={delay(0.1)}>
+        <div className="cs-flow cs-flow--wide reveal" style={delay(0.1)}>
           {IA.map((s, i) => (
             <div key={s.name}>
               <div className="cs-flow-step">
@@ -321,75 +321,62 @@ export default function MyRoomContent() {
         </div>
       </section>
 
-      {/* ── 9 · KEY EXPERIENCES ──────────────────────────────────────────── */}
+      {/* ── 9 · VISUAL EXECUTION ─────────────────────────────────────────── */}
       <section className="cs-band">
         <div className="cs-wrap cs-section">
-          <p className="cs-eyebrow reveal">09 / Key Experiences</p>
-          <h2 className="cs-h2 reveal" style={delay(0.05)}>Five moments that carry the experience.</h2>
-          <div className="cs-features reveal" style={delay(0.1)}>
-            {FEATURES.map((f) => (
-              <article className="cs-feature cs-hoverable" key={f.title}>
-                <div className="cs-ph" data-label="Screen" />
-                <div className="cs-feature-body">
-                  <h3 className="cs-feature-title">{f.title}</h3>
-                  <p className="cs-feature-text">{f.text}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+          <p className="cs-eyebrow reveal">09 / Visual Execution</p>
+          <h2 className="cs-h2 reveal" style={delay(0.05)}>Transforming uncertainty into confidence.</h2>
+          <p className="cs-lead reveal" style={delay(0.08)}>
+            The property page is designed like a virtual property tour — each fold answers a specific
+            user question in the order it naturally arises.
+          </p>
 
-      {/* ── 10 · TRUST-FIRST PDP DEEP DIVE ───────────────────────────────── */}
-      <section className="cs-wrap cs-section">
-        <p className="cs-eyebrow reveal">10 / Trust-first Property Page — Deep Dive</p>
-        <h2 className="cs-h2 reveal" style={delay(0.05)}>Transforming uncertainty into confidence.</h2>
-        <p className="cs-lead reveal" style={delay(0.08)}>
-          The property page answers the four questions every renter is really asking — grouped so the
-          screen builds confidence instead of dumping detail.
-        </p>
-        <div className="cs-pdp">
-          {PDP.map((g) => (
-            <div className="cs-pdp-group reveal" key={g.q}>
-              <div className="cs-pdp-visual cs-hoverable">
-                <div className="cs-ph" data-label="390 × 844" />
-              </div>
-              <div className="cs-pdp-content">
-                <h3 className="cs-pdp-q">{g.q}</h3>
-                <div className="cs-pdp-items">
-                  {g.items.map((it) => <span className="cs-tag" key={it}>{it}</span>)}
+          {/* Compare functionality */}
+          <div className="cs-screens-group reveal" style={delay(0.1)}>
+            <h3 className="cs-screens-title">Compare Functionality</h3>
+            <div className="cs-screens">
+              {COMPARE_SHOTS.map((shot) => (
+                <div className="cs-screen cs-hoverable" key={shot}>
+                  <Image
+                    src={`/work/myroom/${shot}.png`}
+                    alt=""
+                    aria-hidden="true"
+                    width={680}
+                    height={1386}
+                    sizes="(max-width: 1000px) 45vw, 350px"
+                    className="cs-screen-img"
+                  />
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
+            <div className="cs-compare-notes">
+              {COMPARE_NOTES.map((n) => (
+                <div className="cs-annotate-note" key={n.title}>
+                  <h4 className="cs-annotate-note-title">{n.title}</h4>
+                  <p className="cs-annotate-note-text">{n.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Product detail page — single annotated diagram (self-titled image),
+              with a little more breathing room above it. */}
+          <div className="cs-diagram reveal" style={{ marginTop: 72, ...delay(0.1) }}>
+            <Image
+              src="/work/myroom/myroom-pdp.png"
+              alt="MyRoom product detail page — annotated virtual property tour"
+              width={1680}
+              height={7265}
+              sizes="(max-width: 1000px) 680px, 1120px"
+              className="cs-diagram-img"
+            />
+          </div>
         </div>
       </section>
 
-      {/* ── 11 · VALIDATION ──────────────────────────────────────────────── */}
-      <section className="cs-band">
-        <div className="cs-wrap cs-section">
-          <p className="cs-eyebrow reveal">11 / Validation</p>
-          <h2 className="cs-h2 reveal" style={delay(0.05)}>Validating assumptions early.</h2>
-          <div className="cs-cards cs-cards--3 reveal" style={delay(0.1)}>
-            {VALIDATION.map((c) => (
-              <div className="cs-card-wrap" key={c.kicker}>
-                <article className="cs-card">
-                  <span className="cs-card-kicker">{c.kicker}</span>
-                  <h3 className="cs-card-title">{c.title}</h3>
-                  <p className="cs-card-text">{c.text}</p>
-                </article>
-              </div>
-            ))}
-          </div>
-          <div className="cs-media cs-hoverable reveal" style={{ marginTop: 28, ...delay(0.14) }}>
-            <div className="cs-ph cs-ph--wide" data-label="Maze heatmap · 1400 × 800" />
-          </div>
-        </div>
-      </section>
-
-      {/* ── 12 · REFLECTION ──────────────────────────────────────────────── */}
+      {/* ── 10 · REFLECTION ──────────────────────────────────────────────── */}
       <section className="cs-wrap cs-section">
-        <p className="cs-eyebrow reveal">12 / Reflection</p>
+        <p className="cs-eyebrow reveal">10 / Reflection</p>
         <h2 className="cs-h2 reveal" style={delay(0.05)}>What this project taught me.</h2>
         <div className="cs-cards cs-cards--3 reveal" style={delay(0.1)}>
           {REFLECTION.map((r) => (
@@ -403,14 +390,11 @@ export default function MyRoomContent() {
         </div>
       </section>
 
-      {/* ── 13 · NEXT PROJECT ────────────────────────────────────────────── */}
+      {/* ── NEXT PROJECT ─────────────────────────────────────────────────── */}
       <section className="cs-wrap cs-section cs-section--tight">
         <p className="cs-eyebrow reveal">Next Project</p>
-        <Link href="/work/luxury-fitness-app" className="cs-next reveal cs-hoverable" style={delay(0.05)}>
+        <Link href="/work/luxury-fitness-app" className="cs-next reveal" style={delay(0.05)}>
           <div className="cs-next-inner">
-            <div className="cs-next-media">
-              <div className="cs-ph" data-label="Luxury Fitness App" />
-            </div>
             <div>
               <span className="cs-next-label">Case Study</span>
               <p className="cs-next-title">Luxury Fitness App</p>

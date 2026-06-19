@@ -2,14 +2,15 @@
 
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import './work.css'
 
-// Each card links to a live case study.
-const PROJECTS: { title: string; desc: string; href?: string }[] = [
-  { title: 'Luxury Fitness App', desc: 'A premium iOS & Android strength-training experience designed end-to-end in a 2-week sprint — balancing luxury aesthetics with movement-first workout usability.', href: '/work/luxury-fitness-app' },
-  { title: 'OneKey — AI Second Brain', desc: 'An AI-native, voice-first productivity product I designed end-to-end from 0→1, built to make capturing and structuring ideas feel invisible. Currently in internal beta.', href: '/work/onekey' },
-  { title: 'ONO — Agri-commerce Ecosystem', desc: 'Connected experiences across an agri-tech B2B SaaS ecosystem — unifying ONO’s mOS and CASH products into one approachable, discoverable platform over an 8-month embedded role.', href: '/work/ono' },
-  { title: 'MyRoom — Trust-first Accommodation', desc: 'A research-driven consumer product that turns user psychology into a transparent, commute-first accommodation experience for people moving to new cities.', href: '/work/myroom' },
+// Each card links to a live case study. `thumb` is the case study's hero image.
+const PROJECTS: { title: string; desc: string; href?: string; thumb?: string }[] = [
+  { title: 'Luxury Fitness App', desc: 'A premium iOS & Android strength-training experience designed end-to-end in a 2-week sprint — balancing luxury aesthetics with movement-first workout usability.', href: '/work/luxury-fitness-app', thumb: '/work/luxury-fitness-app/hero.png' },
+  { title: 'OneKey — AI Second Brain', desc: 'An AI-native, voice-first productivity product I designed end-to-end from 0→1, built to make capturing and structuring ideas feel invisible. Currently in internal beta.', href: '/work/onekey', thumb: '/work/onekey/hero.png' },
+  { title: 'ONO — Agri-commerce Ecosystem', desc: 'Connected experiences across an agri-tech B2B SaaS ecosystem — unifying ONO’s mOS and CASH products into one approachable, discoverable platform over an 8-month embedded role.', href: '/work/ono', thumb: '/work/ono/hero.png' },
+  { title: 'MyRoom — Trust-first Accommodation', desc: 'A research-driven consumer product that turns user psychology into a transparent, commute-first accommodation experience for people moving to new cities.', href: '/work/myroom', thumb: '/work/myroom/hero.png' },
 ]
 
 export default function WorkContent() {
@@ -50,8 +51,12 @@ export default function WorkContent() {
           const card = (
             <article className="work-card">
               <div className="work-card-media">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/work/placeholder.svg" alt="" aria-hidden="true" className="work-card-img" />
+                {p.thumb ? (
+                  <Image src={p.thumb} alt={`${p.title} preview`} width={1680} height={1020} sizes="(max-width: 1000px) 100vw, 620px" className="work-card-img" />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src="/work/placeholder.svg" alt="" aria-hidden="true" className="work-card-img" />
+                )}
               </div>
               <div className="work-card-body">
                 <h2 className="work-card-title">{p.title}</h2>
