@@ -801,6 +801,15 @@ export default function PortfolioCanvas() {
         .to('#ask-ai-btn',  { opacity: 1, duration: 0.3 }, 1.4)
     }
 
+    // On mobile/tablet, the scattered canvas pieces should be reliably TAPPABLE
+    // rather than draggable (touch jitter otherwise trips the drag threshold and
+    // eats the tap). Disabling their Draggables lets the native link/panel click
+    // fire; the canvas itself stays pannable. Touch-only — desktop is untouched.
+    if (window.matchMedia('(max-width: 1024px)').matches) {
+      ;[polaroidRef.current, projectDeckRef.current, contactRef.current, gpStickerRef.current]
+        .forEach(el => { if (el) Draggable.get(el)?.disable() })
+    }
+
     return () => {
       // Fully tear down everything this effect created. Without this, Fast
       // Refresh / Strict-Mode re-mounts stack duplicate Draggables and stale

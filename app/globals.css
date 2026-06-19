@@ -915,31 +915,46 @@ html, body {
 }
 .mobile-menu-item:active { background: rgba(0,0,0,0.06); }
 
-@media (max-width: 768px) {
-  /* Non-home pages already hide the cursor tag here. */
-  #cursor-tag { display: none; }
-
-  /* ── Home (canvas) mobile cleanup ─────────────────────────────────────── */
-  /* Green canvas cursor — pointer-driven only, useless on touch. */
+/* ── Mobile + tablet (≤1024px). Everything here is width-gated or touch-only,
+   so laptop/desktop (>1024px, mouse) is never affected. ───────────────────── */
+@media (max-width: 1024px) {
+  /* Green cursor — pointer-driven only, useless on touch (home + other pages). */
   #cursor-arrow, #cursor-tag { display: none; }
   /* "Delhi, IND — time" readout (collides with the name on narrow screens). */
   #fixed-top-right { display: none; }
-  /* Left-edge tool stack. */
-  #tool-stack { display: none; }
+  /* Left-edge tool stack + bottom social dock. */
+  #tool-stack, #social-dock { display: none; }
 
-  /* Hero subtext: let it wrap + shrink so it never leaves the viewport. */
+  /* Allow native pinch-zoom on the canvas. touch-action only affects touch
+     input, so a mouse on desktop is completely unaffected. !important beats the
+     inline touch-action:none that GSAP Draggable applies for the pan. */
+  #canvas { touch-action: pinch-zoom !important; }
+
+  /* Hero subtext: larger, wrapping, and constrained so it never overflows. */
   #hero-tagline {
     flex-wrap: wrap;
     white-space: normal;
-    max-width: 300px;
+    max-width: 320px;
     gap: 6px;
   }
-  #hero-tagline-text { font-size: 15px; line-height: 1.4; white-space: normal; }
+  #hero-tagline-text { font-size: 19px; line-height: 1.4; white-space: normal; }
   #hero-tagline img { display: none; } /* decorative flanking lines */
 
-  /* Side panels fill the screen instead of overflowing it. */
-  #ai-panel, #gp-panel, #contact-panel { width: 100%; max-width: 100%; }
-  #gp-panel, #contact-panel { padding: 32px 20px; }
+  /* Side panels fill the screen; 100dvh + safe-area keep content clear of the
+     iOS bottom bar / home indicator (e.g. the Ask AI input). */
+  #ai-panel, #gp-panel, #contact-panel { width: 100%; max-width: 100%; height: 100dvh; }
+  #gp-panel, #contact-panel { padding: 32px 20px calc(32px + env(safe-area-inset-bottom)); }
+  #ai-input-area { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+  #ask-ai-btn { bottom: calc(24px + env(safe-area-inset-bottom)); }
+
+  /* Larger tap targets (≥44px) for the panel close buttons. */
+  #gp-close, #contact-close {
+    top: 14px; right: 14px;
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #contact-close { font-size: 22px; }
+  .ai-header-icon-btn { width: 44px; height: 44px; }
 
   /* Reveal the hamburger menu. */
   #mobile-menu-btn { display: flex; }
