@@ -10,8 +10,24 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
+  // Absolute base for OG/canonical URLs. Update if the production domain differs.
+  metadataBase: new URL('https://dhairya.work'),
   title: 'Dhairya Narang — Design',
   description: "Designing products. Exploring AI. Building what's next.",
+  // opengraph-image.png / twitter-image.png in /app are picked up automatically
+  // for the image; these add the title/description/card type for rich previews.
+  openGraph: {
+    title: 'Dhairya Narang — Design',
+    description: "Designing products. Exploring AI. Building what's next.",
+    url: '/',
+    siteName: 'Dhairya Narang',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dhairya Narang — Design',
+    description: "Designing products. Exploring AI. Building what's next.",
+  },
 }
 
 export default function RootLayout({

@@ -105,8 +105,8 @@ const WITTY_MESSAGES = [
   "that's my name, not a sticker."
 ]
 
+// Public gist holding Dhairya's bio/résumé context that grounds the AI answers.
 const GIST_URL = "https://gist.githubusercontent.com/dhairyanarang/9d4ce39946c6f95e256a0b6baecc84a2/raw/b77985aec32d04be8d2e366ce6a415bb5359e24b/dhairya-context.md"
-const GEMINI_API_KEY = "" // Add your Gemini API key here
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -147,7 +147,7 @@ export default function PortfolioCanvas() {
   const [aiOpen, setAiOpen] = useState(false)
   const [gpStoryIdx, setGpStoryIdx] = useState(0)
   const [gpOrder, setGpOrder] = useState<number[]>([0, 1, 2])
-  const [aiMessages, setAiMessages] = useState<Array<{role: 'user'|'ai', text: string}>>([])
+  const [aiMessages, setAiMessages] = useState<Array<{role: 'user'|'ai', text: string, followups?: string[]}>>([])
   const [aiInput, setAiInput] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [showIntro, setShowIntro] = useState(true)
@@ -228,22 +228,15 @@ export default function PortfolioCanvas() {
 
     try {
       const context = await loadContext()
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`
-      const response = await fetch(url, {
+      const response = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: context }] },
-          contents: conversationRef.current.map(m => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: m.content }]
-          }))
-        })
+        body: JSON.stringify({ context, messages: conversationRef.current }),
       })
       const data = await response.json()
-      const reply = data.candidates[0].content.parts[0].text
-      conversationRef.current.push({ role: 'assistant', content: reply })
-      setAiMessages(prev => [...prev, { role: 'ai', text: reply }])
+      if (!response.ok || !data.reply) throw new Error('ai-failed')
+      conversationRef.current.push({ role: 'assistant', content: data.reply })
+      setAiMessages(prev => [...prev, { role: 'ai', text: data.reply, followups: data.followups || [] }])
     } catch {
       setAiMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Reach out to Dhairya directly on LinkedIn.' }])
     }
@@ -902,8 +895,6 @@ export default function PortfolioCanvas() {
     "Are you available for work?"
   ]
 
-  const conversationRef2 = useRef<Array<{role:string,content:string}>>([])
-  // Note: conversationRef is used in sendAiMessage via closure; no duplication needed.
 
   return (
     <>
@@ -1011,7 +1002,7 @@ export default function PortfolioCanvas() {
         </div>
 
         {/* Contact sticker */}
-        <a id="contact-sticker" ref={contactRef} href="/contact" aria-label="Contact Dhairya"
+        <a id="contact-sticker" ref={contactRef} href="#" aria-label="Contact Dhairya"
            onMouseEnter={() => setCursorLabel("Let's Talk")}
            onMouseLeave={() => setCursorLabel('You')}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1240,6 +1231,13 @@ export default function PortfolioCanvas() {
           {aiMessages.map((msg, i) => (
             <div key={i} className={`ai-msg-row ${msg.role}`}>
               <div className={`ai-bubble ${msg.role}`}>{msg.text}</div>
+              {msg.role === 'ai' && msg.followups && msg.followups.length > 0 && (
+                <div className="ai-followups">
+                  {msg.followups.map(f => (
+                    <button key={f} className="ai-chip ai-chip-followup" onClick={() => sendAiMessage(f)}>{f}</button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
           {aiLoading && (
