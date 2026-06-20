@@ -141,6 +141,7 @@ export default function PortfolioCanvas() {
   const gpStoryRef      = useRef<HTMLDivElement>(null)
   const aiPanelRef      = useRef<HTMLDivElement>(null)
   const aiMessagesRef   = useRef<HTMLDivElement>(null)
+  const aiInputRef      = useRef<HTMLTextAreaElement>(null)
   const polaroidRef     = useRef<HTMLAnchorElement>(null)
   const projectDeckRef  = useRef<HTMLDivElement>(null)
   const deckCard1Ref    = useRef<HTMLAnchorElement>(null)
@@ -241,22 +242,10 @@ export default function PortfolioCanvas() {
     setAiLoading(true)
     conversationRef.current.push({ role: 'user', content: text })
 
-    const MARKER = '<<<FOLLOWUPS>>>'
     const stripSym = (f: string) =>
       f.replace(/^[\s>→➜•·\-–—*]+/, '').replace(/^\d+[.)]\s*/, '').trim()
-    // The answer is everything before the marker. While streaming, also hide a
-    // marker that's only partially arrived at the tail (e.g. "<<<FOL").
-    const answerOf = (s: string) => {
-      const i = s.indexOf(MARKER)
-      if (i >= 0) return s.slice(0, i).trimEnd()
-      let a = s
-      for (let n = Math.min(MARKER.length, a.length); n >= 3; n--) {
-        if (a.endsWith(MARKER.slice(0, n))) { a = a.slice(0, a.length - n); break }
-      }
-      return a.trimEnd()
-    }
     // Replace the in-progress AI bubble (always the last message once streaming starts).
-    const updateLastAi = (patch: { text: string; followups?: string[] }) =>
+    const updateLastAi = (patch: { text?: string; followups?: string[] }) =>
       setAiMessages(prev => {
         const next = [...prev]
         const last = next.length - 1
@@ -275,32 +264,23 @@ export default function PortfolioCanvas() {
 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
-      let full = ''         // everything received so far (answer + marker + followups)
+      let full = ''         // the answer text received so far
       let streamDone = false
       let started = false   // has the visible bubble been created yet
-      let shown = 0         // how many answer chars are currently revealed
+      let shown = 0         // how many chars are currently revealed
       let finalized = false
+      let finalAnswer = ''
 
       const finalize = () => {
         if (finalized) return
         finalized = true
-        const answer = answerOf(full).trim() || "Sorry, I couldn't generate a response just now."
-        let followups: string[] = []
-        const mi = full.indexOf(MARKER)
-        if (mi >= 0) {
-          try {
-            const arr = JSON.parse(full.slice(mi + MARKER.length).trim())
-            if (Array.isArray(arr)) {
-              followups = arr.filter((x): x is string => typeof x === 'string').map(stripSym).filter(Boolean).slice(0, 3)
-            }
-          } catch { /* leave followups empty if the tail isn't valid JSON */ }
-        }
-        conversationRef.current.push({ role: 'assistant', content: answer })
+        finalAnswer = full.trim() || "Sorry, I couldn't generate a response just now."
+        conversationRef.current.push({ role: 'assistant', content: finalAnswer })
         if (!started) {
           setAiLoading(false)
-          setAiMessages(prev => [...prev, { role: 'ai', text: answer, followups }])
+          setAiMessages(prev => [...prev, { role: 'ai', text: finalAnswer, followups: [] }])
         } else {
-          updateLastAi({ text: answer, followups })
+          updateLastAi({ text: finalAnswer })
         }
       }
 
@@ -319,14 +299,16 @@ export default function PortfolioCanvas() {
       // …while a steady ticker reveals it like typing, always chasing the buffer.
       await new Promise<void>((resolve) => {
         const timer = setInterval(() => {
-          const answer = answerOf(full)
+          const answer = full
           if (!started && answer) {
             started = true
             setAiLoading(false) // swap the typing dots for the streaming bubble
             setAiMessages(prev => [...prev, { role: 'ai', text: '', followups: [] }])
           }
           if (started && shown < answer.length) {
-            shown += Math.max(3, Math.ceil((answer.length - shown) / 8))
+            // Steady typewriter pace: a few chars per tick (capped so a big
+            // buffered chunk doesn't dump all at once, and it eases off near the end).
+            shown += Math.max(2, Math.min(5, Math.ceil((answer.length - shown) / 60)))
             if (shown > answer.length) shown = answer.length
             updateLastAi({ text: answer.slice(0, shown) })
           } else if (streamDone) {
@@ -334,9 +316,26 @@ export default function PortfolioCanvas() {
             finalize()
             resolve()
           }
-        }, 16)
+        }, 20)
       })
       await pump
+
+      // Fetch suggested follow-ups in a separate, reliable JSON call so a long
+      // answer can never crowd them out. They pop in once the answer has settled.
+      try {
+        const fr = await fetch('/api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'followups', question: text, answer: finalAnswer }),
+        })
+        if (fr.ok) {
+          const data = await fr.json()
+          const fu: string[] = Array.isArray(data.followups)
+            ? data.followups.filter((x: unknown): x is string => typeof x === 'string').map(stripSym).filter(Boolean).slice(0, 3)
+            : []
+          if (fu.length) updateLastAi({ followups: fu })
+        }
+      } catch { /* no follow-ups is fine */ }
     } catch {
       setAiMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Reach out to Dhairya directly on LinkedIn.', followups: [] }])
     } finally {
@@ -826,8 +825,10 @@ export default function PortfolioCanvas() {
     // ── Scroll / pinch zoom ──
     const SCALE_MIN = 0.6, SCALE_MAX = 1.4, SCALE_STEP = 0.02
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
+      // When a panel (e.g. the AI chat) is open, let the wheel scroll it
+      // natively — don't preventDefault, or the chat can't scroll.
       if (panelIsOpenRef.current) return
+      e.preventDefault()
       if (e.ctrlKey) {
         const dir = e.deltaY > 0 ? -1 : 1
         const cx = Number(gsap.getProperty(canvas, 'x')), cy = Number(gsap.getProperty(canvas, 'y'))
@@ -964,9 +965,26 @@ export default function PortfolioCanvas() {
   }, [shuffleGpOrder, loadContext])
 
   // ── Auto-scroll AI messages ──────────────────────────────────────────────
+  // Stick to the bottom as new text streams in, but only if the user is already
+  // near the bottom — if they've scrolled up to read, leave them there.
+  const stickBottomRef = useRef(true)
+  const onAiMessagesScroll = useCallback(() => {
+    const el = aiMessagesRef.current
+    if (!el) return
+    stickBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60
+  }, [])
   useEffect(() => {
-    if (aiMessagesRef.current) aiMessagesRef.current.scrollTop = aiMessagesRef.current.scrollHeight
+    const el = aiMessagesRef.current
+    if (el && stickBottomRef.current) el.scrollTop = el.scrollHeight
   }, [aiMessages, aiLoading])
+
+  // Auto-grow the chat textarea with its content (and reset when cleared).
+  useEffect(() => {
+    const el = aiInputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 132) + 'px'
+  }, [aiInput])
 
   // ── GP shuffle click ──────────────────────────────────────────────────────
   const handleGpShuffle = () => {
@@ -1317,7 +1335,7 @@ export default function PortfolioCanvas() {
           </div>
         </div>
 
-        <div id="ai-messages" ref={aiMessagesRef}>
+        <div id="ai-messages" ref={aiMessagesRef} onScroll={onAiMessagesScroll}>
           {showIntro && (
             <>
               <p id="ai-intro-text">Hi! I&apos;m Dhairya&apos;s AI Chatbot — ask me anything about his work, skills or experience.</p>
@@ -1360,14 +1378,21 @@ export default function PortfolioCanvas() {
         </div>
 
         <div id="ai-input-area">
-          <input
+          <textarea
             id="ai-input"
-            type="text"
+            ref={aiInputRef}
             placeholder="Ask me anything..."
             autoComplete="off"
+            rows={1}
             value={aiInput}
             onChange={e => setAiInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && aiInput.trim() && !aiLoading) sendAiMessage(aiInput) }}
+            onKeyDown={e => {
+              // Enter sends; Shift+Enter inserts a newline.
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                if (aiInput.trim() && !aiLoading) sendAiMessage(aiInput)
+              }
+            }}
           />
           <button
             id="ai-send"

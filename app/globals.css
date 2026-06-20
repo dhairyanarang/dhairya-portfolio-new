@@ -869,9 +869,17 @@ html, body {
   0%, 100% { opacity: 0.25; transform: translateY(0); }
   50% { opacity: 1; transform: translateY(-3px); }
 }
-#ai-input-area { border-top: 1px solid rgba(0,0,0,0.08); padding: 20px 24px; background: white; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-#ai-input { flex: 1; border: none; outline: none; font-family: var(--font-space-grotesk), sans-serif; font-size: 14px; color: #0A0A0A; background: transparent; }
+#ai-input-area { border-top: 1px solid rgba(0,0,0,0.08); padding: 16px 24px; background: white; display: flex; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+/* Auto-growing multi-line textarea (height managed in JS); wraps instead of
+   scrolling sideways, and grows the input area upward as you type. */
+#ai-input {
+  flex: 1; border: none; outline: none;
+  font-family: var(--font-space-grotesk), sans-serif; font-size: 14px; line-height: 1.5;
+  color: #0A0A0A; background: transparent;
+  resize: none; padding: 4px 0; margin: 0; max-height: 132px; overflow-y: auto;
+}
 #ai-input::placeholder { color: rgba(0,0,0,0.4); }
+#ai-send { flex-shrink: 0; margin-bottom: 2px; }
 #ai-send { background: transparent; border: none; padding: 0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: opacity 0.15s ease; }
 #ai-send img { width: 20px; height: 20px; display: block; }
 #ai-send:hover:not(:disabled) { opacity: 0.6; }
