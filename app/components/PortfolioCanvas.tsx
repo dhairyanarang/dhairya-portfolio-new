@@ -241,6 +241,29 @@ export default function PortfolioCanvas() {
     setAiLoading(true)
     conversationRef.current.push({ role: 'user', content: text })
 
+    const MARKER = '<<<FOLLOWUPS>>>'
+    const stripSym = (f: string) =>
+      f.replace(/^[\s>→➜•·\-–—*]+/, '').replace(/^\d+[.)]\s*/, '').trim()
+    // The answer is everything before the marker. While streaming, also hide a
+    // marker that's only partially arrived at the tail (e.g. "<<<FOL").
+    const answerOf = (s: string) => {
+      const i = s.indexOf(MARKER)
+      if (i >= 0) return s.slice(0, i).trimEnd()
+      let a = s
+      for (let n = Math.min(MARKER.length, a.length); n >= 3; n--) {
+        if (a.endsWith(MARKER.slice(0, n))) { a = a.slice(0, a.length - n); break }
+      }
+      return a.trimEnd()
+    }
+    // Replace the in-progress AI bubble (always the last message once streaming starts).
+    const updateLastAi = (patch: { text: string; followups?: string[] }) =>
+      setAiMessages(prev => {
+        const next = [...prev]
+        const last = next.length - 1
+        if (last >= 0 && next[last].role === 'ai') next[last] = { ...next[last], ...patch }
+        return next
+      })
+
     try {
       const context = await loadContext()
       const response = await fetch('/api/ask', {
@@ -248,14 +271,77 @@ export default function PortfolioCanvas() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ context, messages: conversationRef.current }),
       })
-      const data = await response.json()
-      if (!response.ok || !data.reply) throw new Error('ai-failed')
-      conversationRef.current.push({ role: 'assistant', content: data.reply })
-      setAiMessages(prev => [...prev, { role: 'ai', text: data.reply, followups: data.followups || [] }])
+      if (!response.ok || !response.body) throw new Error('ai-failed')
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let full = ''         // everything received so far (answer + marker + followups)
+      let streamDone = false
+      let started = false   // has the visible bubble been created yet
+      let shown = 0         // how many answer chars are currently revealed
+      let finalized = false
+
+      const finalize = () => {
+        if (finalized) return
+        finalized = true
+        const answer = answerOf(full).trim() || "Sorry, I couldn't generate a response just now."
+        let followups: string[] = []
+        const mi = full.indexOf(MARKER)
+        if (mi >= 0) {
+          try {
+            const arr = JSON.parse(full.slice(mi + MARKER.length).trim())
+            if (Array.isArray(arr)) {
+              followups = arr.filter((x): x is string => typeof x === 'string').map(stripSym).filter(Boolean).slice(0, 3)
+            }
+          } catch { /* leave followups empty if the tail isn't valid JSON */ }
+        }
+        conversationRef.current.push({ role: 'assistant', content: answer })
+        if (!started) {
+          setAiLoading(false)
+          setAiMessages(prev => [...prev, { role: 'ai', text: answer, followups }])
+        } else {
+          updateLastAi({ text: answer, followups })
+        }
+      }
+
+      // Pump the network stream into `full` as fast as it arrives…
+      const pump = (async () => {
+        try {
+          for (;;) {
+            const { done, value } = await reader.read()
+            if (done) break
+            full += decoder.decode(value, { stream: true })
+          }
+        } catch { /* upstream hiccup — reveal whatever arrived */ }
+        streamDone = true
+      })()
+
+      // …while a steady ticker reveals it like typing, always chasing the buffer.
+      await new Promise<void>((resolve) => {
+        const timer = setInterval(() => {
+          const answer = answerOf(full)
+          if (!started && answer) {
+            started = true
+            setAiLoading(false) // swap the typing dots for the streaming bubble
+            setAiMessages(prev => [...prev, { role: 'ai', text: '', followups: [] }])
+          }
+          if (started && shown < answer.length) {
+            shown += Math.max(3, Math.ceil((answer.length - shown) / 8))
+            if (shown > answer.length) shown = answer.length
+            updateLastAi({ text: answer.slice(0, shown) })
+          } else if (streamDone) {
+            clearInterval(timer)
+            finalize()
+            resolve()
+          }
+        }, 16)
+      })
+      await pump
     } catch {
-      setAiMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Reach out to Dhairya directly on LinkedIn.' }])
+      setAiMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Reach out to Dhairya directly on LinkedIn.', followups: [] }])
+    } finally {
+      setAiLoading(false)
     }
-    setAiLoading(false)
   }, [aiLoading, loadContext])
 
   // ── Main GSAP setup ────────────────────────────────────────────────────────

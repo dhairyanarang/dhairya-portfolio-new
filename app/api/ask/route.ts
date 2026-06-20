@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server'
 
-// Runs on the server only. The OpenAI key lives in process.env and is never
-// sent to the browser — the client posts the conversation here, this route
-// talks to OpenAI and returns just the answer + suggested follow-ups.
+// Runs on the server only. The OpenAI key lives in process.env and is never sent
+// to the browser — the client posts the conversation here, this route talks to
+// OpenAI and *streams* the reply back token-by-token so it appears as it's typed.
+//
+// The model writes its Markdown answer, then a line `<<<FOLLOWUPS>>>`, then a JSON
+// array of follow-up questions. The client renders everything before the marker
+// as the answer (live) and parses the array after it once the stream ends.
 export const runtime = 'nodejs'
+
+const FOLLOWUPS_MARKER = '<<<FOLLOWUPS>>>'
 
 type ChatMsg = { role: string; content: string }
 
@@ -25,16 +31,18 @@ export async function POST(req: Request) {
 
   const system = `You are the friendly AI assistant on Dhairya Narang's portfolio website. ` +
     `Answer a visitor's questions about Dhairya's work, skills, projects and experience using ONLY the context below. Be warm, specific and concise.\n\n` +
-    `FORMAT the "answer" as clean GitHub-flavoured Markdown so it reads well, not as one long block:\n` +
+    `Write your reply as clean GitHub-flavoured Markdown so it reads well, not as one long block:\n` +
     `- Open with a short one-line summary sentence.\n` +
     `- When the answer has multiple parts, group them under short bold headings like **Experience** or **Tools** (use a couple of headings if it helps).\n` +
     `- Use "- " bullet points for lists, and **bold** for key terms (names, roles, numbers).\n` +
-    `- Separate paragraphs/sections with a blank line. Keep it scannable and brief — avoid walls of text.\n` +
+    `- Separate paragraphs/sections with a blank line. Keep it scannable and brief — avoid walls of text. ` +
+    `Keep the answer itself under ~180 words even for broad questions (summarise at a high level), so there is always room for the follow-ups.\n` +
     `- When it's useful (e.g. inviting the visitor to get in touch, or when the info isn't in the context), include Markdown links: ` +
     `[LinkedIn](https://www.linkedin.com/in/dhairya-narang/), [email](mailto:dhairyanarang077@gmail.com), [Behance](https://www.behance.net/dhairyanarang36).\n` +
     `If something isn't covered in the context, say you're not sure and point them to [LinkedIn](https://www.linkedin.com/in/dhairya-narang/) or [email](mailto:dhairyanarang077@gmail.com).\n\n` +
-    `Respond as a JSON object with exactly two keys: ` +
-    `"answer" (the Markdown string) and "followups" (an array of 2–3 short, natural follow-up questions a visitor might ask next, each under ~8 words, plain text with NO leading arrows, dashes, bullets, numbers or other symbols).\n\n` +
+    `After the complete answer, output a new line containing EXACTLY:\n${FOLLOWUPS_MARKER}\n` +
+    `then on the next line a JSON array of 2–3 short, natural follow-up questions a visitor might ask next ` +
+    `(plain text, each under ~8 words, with NO leading arrows, dashes, bullets, numbers or other symbols). Output nothing after the array.\n\n` +
     `CONTEXT:\n${context}`
 
   const messages = [
@@ -45,8 +53,9 @@ export async function POST(req: Request) {
     })),
   ]
 
+  let upstream: Response
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    upstream = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -55,39 +64,66 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages,
-        response_format: { type: 'json_object' },
         temperature: 0.6,
-        max_tokens: 500,
+        max_tokens: 900,
+        stream: true,
       }),
-    })
-
-    if (!res.ok) {
-      return NextResponse.json({ error: 'AI request failed.' }, { status: 502 })
-    }
-
-    const data = await res.json()
-    const raw: string = data?.choices?.[0]?.message?.content || '{}'
-    let parsed: { answer?: string; followups?: string[] } = {}
-    try {
-      parsed = JSON.parse(raw)
-    } catch {
-      parsed = { answer: raw }
-    }
-
-    const followups = Array.isArray(parsed.followups)
-      ? parsed.followups
-          .filter((f): f is string => typeof f === 'string')
-          // Strip any leading arrows / dashes / bullets / numbering the model adds.
-          .map((f) => f.replace(/^[\s>→➜•·\-–—*]+/, '').replace(/^\d+[.)]\s*/, '').trim())
-          .filter(Boolean)
-          .slice(0, 3)
-      : []
-
-    return NextResponse.json({
-      reply: parsed.answer?.trim() || "Sorry, I couldn't generate a response just now.",
-      followups,
     })
   } catch {
     return NextResponse.json({ error: 'AI request failed.' }, { status: 502 })
   }
+
+  if (!upstream.ok || !upstream.body) {
+    return NextResponse.json({ error: 'AI request failed.' }, { status: 502 })
+  }
+
+  // Re-emit OpenAI's SSE stream as a plain-text stream of just the content deltas.
+  const encoder = new TextEncoder()
+  const decoder = new TextDecoder()
+  const reader = upstream.body.getReader()
+
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      let buffer = ''
+      try {
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || '' // keep the partial last line for the next chunk
+          for (const line of lines) {
+            const trimmed = line.trim()
+            if (!trimmed.startsWith('data:')) continue
+            const data = trimmed.slice(5).trim()
+            if (data === '[DONE]') {
+              controller.close()
+              return
+            }
+            try {
+              const json = JSON.parse(data)
+              const delta: string | undefined = json?.choices?.[0]?.delta?.content
+              if (delta) controller.enqueue(encoder.encode(delta))
+            } catch {
+              // ignore keep-alives / non-JSON lines
+            }
+          }
+        }
+      } catch {
+        // upstream hiccup — just end the stream with whatever we sent
+      }
+      controller.close()
+    },
+    cancel() {
+      reader.cancel().catch(() => {})
+    },
+  })
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      'X-Accel-Buffering': 'no',
+    },
+  })
 }
