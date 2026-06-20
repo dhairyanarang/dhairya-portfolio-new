@@ -337,7 +337,10 @@ html, body {
   left: 24px;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255,255,255,0.6);
+  /* Solid-ish bg instead of backdrop-filter: blur — Chrome re-blurs the moving
+     canvas behind this every frame while panning, which causes visible lag
+     (Safari does it cheaply). Higher opacity keeps a near-identical look. */
+  background: rgba(255,255,255,0.85);
   border: 1px solid rgba(0,0,0,0.12);
   box-shadow: 0px 0px 8px rgba(0,0,0,0.08);
   border-radius: 16px;
@@ -347,7 +350,6 @@ html, body {
   align-items: center;
   gap: 12px;
   z-index: 200;
-  backdrop-filter: blur(8px);
 }
 .tool-icon {
   width: 24px;
@@ -392,7 +394,8 @@ html, body {
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255,255,255,0.6);
+  /* Solid-ish bg instead of backdrop-filter: blur — see #tool-stack above. */
+  background: rgba(255,255,255,0.85);
   border: 1px solid rgba(0,0,0,0.12);
   box-shadow: 0px 0px 8px rgba(0,0,0,0.08);
   border-radius: 16px;
@@ -402,7 +405,6 @@ html, body {
   align-items: center;
   gap: 20px;
   z-index: 200;
-  backdrop-filter: blur(8px);
 }
 .dock-icon {
   width: 24px;
@@ -905,11 +907,9 @@ html, body {
   width: 44px; height: 44px;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.92);
   border: 1px solid rgba(0,0,0,0.12);
   border-radius: 12px;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
   box-shadow: 0 1px 6px rgba(0,0,0,0.08);
 }
 #mobile-menu {
