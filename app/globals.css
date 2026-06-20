@@ -872,15 +872,6 @@ html, body {
 #ai-input-area { border-top: 1px solid rgba(0,0,0,0.08); padding: 20px 24px; background: white; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 #ai-input { flex: 1; border: none; outline: none; font-family: var(--font-space-grotesk), sans-serif; font-size: 14px; color: #0A0A0A; background: transparent; }
 #ai-input::placeholder { color: rgba(0,0,0,0.4); }
-
-/* The canvas hides the OS cursor globally (`* { cursor: none }`). Inside the chat
-   panel, restore normal cursors and hide the canvas's custom green cursor so the
-   chat behaves like an ordinary panel. */
-#ai-panel, #ai-panel * { cursor: auto; }
-#ai-panel button, #ai-panel a, #ai-panel .ai-chip { cursor: pointer; }
-#ai-panel #ai-input { cursor: text; }
-body.ai-panel-open #cursor-arrow,
-body.ai-panel-open #cursor-tag { opacity: 0 !important; }
 #ai-send { background: transparent; border: none; padding: 0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: opacity 0.15s ease; }
 #ai-send img { width: 20px; height: 20px; display: block; }
 #ai-send:hover:not(:disabled) { opacity: 0.6; }

@@ -882,13 +882,6 @@ export default function PortfolioCanvas() {
     if (aiMessagesRef.current) aiMessagesRef.current.scrollTop = aiMessagesRef.current.scrollHeight
   }, [aiMessages, aiLoading])
 
-  // While the chat is open, hide the canvas's custom green cursor and let the OS
-  // cursor show inside the panel (handled in globals.css via this body class).
-  useEffect(() => {
-    document.body.classList.toggle('ai-panel-open', aiOpen)
-    return () => document.body.classList.remove('ai-panel-open')
-  }, [aiOpen])
-
   // ── GP shuffle click ──────────────────────────────────────────────────────
   const handleGpShuffle = () => {
     const nextIdx = (gpStoryIdx + 1) % gpOrder.length
