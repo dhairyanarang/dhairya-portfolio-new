@@ -121,7 +121,9 @@ const WITTY_MESSAGES = [
 ]
 
 // Public gist holding Dhairya's bio/résumé context that grounds the AI answers.
-const GIST_URL = "https://gist.githubusercontent.com/dhairyanarang/9d4ce39946c6f95e256a0b6baecc84a2/raw/b77985aec32d04be8d2e366ce6a415bb5359e24b/dhairya-context.md"
+// Unpinned raw URL → always serves the latest Gist revision, so editing the Gist
+// (résumé link, context, etc.) updates the AI without a code change.
+const GIST_URL = "https://gist.githubusercontent.com/dhairyanarang/9d4ce39946c6f95e256a0b6baecc84a2/raw/dhairya-context.md"
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
