@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'AI is not configured.' }, { status: 500 })
   }
 
-  let body: { context?: string; messages?: ChatMsg[]; mode?: string; question?: string; answer?: string }
+  let body: { context?: string; messages?: ChatMsg[]; mode?: string; question?: string; answer?: string; turn?: number }
   try {
     body = await req.json()
   } catch {
@@ -32,13 +32,19 @@ export async function POST(req: Request) {
   if (body.mode === 'followups') {
     const q = (body.question || '').slice(0, 1000)
     const a = (body.answer || '').slice(0, 4000)
+    const turn = Math.max(1, Math.min(20, Number(body.turn) || 1))
     const messages = [
       {
         role: 'system',
         content:
-          `You suggest follow-up questions for the AI chat on Dhairya Narang's portfolio. ` +
-          `Given the visitor's question and the assistant's answer, return exactly 3 short, natural follow-up questions the visitor might ask next — ` +
-          `each under ~8 words, plain text, no leading symbols. Respond ONLY as JSON: {"followups":["q1","q2","q3"]}.`,
+          `You suggest follow-up questions for the AI chat on Dhairya Narang's portfolio, whose knowledge is a single, limited context file. ` +
+          `This is turn ${turn} of the conversation. Given the visitor's last question and the assistant's answer, suggest the follow-ups the visitor might naturally tap next. ` +
+          `Each must be answerable from a portfolio/résumé context, under ~8 words, plain text, no leading symbols. Respond ONLY as JSON: {"followups":[...]}.\n` +
+          `Taper as the conversation deepens — never force questions the limited context can't answer well:\n` +
+          `- Turns 1-2: up to 3 specific, on-topic follow-ups.\n` +
+          `- Turns 3-4: at most 2, broader; you may include a gentle nudge like "How can I get in touch with Dhairya?".\n` +
+          `- Turn 5+: just 1-2 general, winding-down suggestions such as "How can I contact Dhairya?" or "What else can I explore?".\n` +
+          `Never repeat questions already covered, and if there are no genuinely useful follow-ups, return fewer or an empty array.`,
       },
       { role: 'user', content: `Question: ${q}\n\nAnswer: ${a}` },
     ]
@@ -81,7 +87,8 @@ export async function POST(req: Request) {
     `- When it's useful (e.g. inviting the visitor to get in touch, or when the info isn't in the context), include Markdown links: ` +
     `[LinkedIn](https://www.linkedin.com/in/dhairya-narang/), [email](mailto:dhairyanarang077@gmail.com), [Behance](https://www.behance.net/dhairyanarang36).\n` +
     `If something isn't covered in the context, say you're not sure and point them to [LinkedIn](https://www.linkedin.com/in/dhairya-narang/) or [email](mailto:dhairyanarang077@gmail.com).\n\n` +
-    `CONTEXT:\n${context}`
+    `CONTEXT:\n${context}\n\n` +
+    `REMINDER: Answer ONLY the question asked, using the context above. Do NOT end your answer with follow-up questions, "you might also ask", "feel free to ask", an arrow list (→ …) or any list of suggested questions — those are shown to the visitor separately as buttons.`
 
   const messages = [
     { role: 'system', content: system },

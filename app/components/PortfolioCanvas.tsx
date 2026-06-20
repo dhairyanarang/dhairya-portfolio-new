@@ -244,6 +244,26 @@ export default function PortfolioCanvas() {
 
     const stripSym = (f: string) =>
       f.replace(/^[\s>→➜•·\-–—*]+/, '').replace(/^\d+[.)]\s*/, '').trim()
+    // Safety net: the model sometimes tacks suggested follow-ups onto its answer
+    // as "→ …" lines (we render those as buttons separately). Drop any such
+    // trailing block, plus a "Follow-up / you might also ask" header above it.
+    const cleanAnswer = (s: string) => {
+      const lines = s.split('\n')
+      let cut = lines.length
+      for (let j = lines.length - 1; j >= 0; j--) {
+        const t = lines[j].trim()
+        if (t === '') { cut = j; continue }
+        if (/^(?:→|➜|->)\s+/.test(t)) { cut = j; continue }
+        break
+      }
+      // also drop a leftover "follow-up questions:" style header
+      while (cut > 0) {
+        const t = lines[cut - 1].trim()
+        if (t === '' || /^\**\s*(follow[-\s]?up|you might (also )?ask|you (might|could) also|other questions|questions you).*:?\**$/i.test(t)) { cut--; continue }
+        break
+      }
+      return lines.slice(0, cut).join('\n').trimEnd()
+    }
     // Replace the in-progress AI bubble (always the last message once streaming starts).
     const updateLastAi = (patch: { text?: string; followups?: string[] }) =>
       setAiMessages(prev => {
@@ -274,7 +294,7 @@ export default function PortfolioCanvas() {
       const finalize = () => {
         if (finalized) return
         finalized = true
-        finalAnswer = full.trim() || "Sorry, I couldn't generate a response just now."
+        finalAnswer = cleanAnswer(full).trim() || "Sorry, I couldn't generate a response just now."
         conversationRef.current.push({ role: 'assistant', content: finalAnswer })
         if (!started) {
           setAiLoading(false)
@@ -297,9 +317,9 @@ export default function PortfolioCanvas() {
       })()
 
       // …while a steady ticker reveals it like typing, always chasing the buffer.
-      await new Promise<void>((resolve) => {
+      const revealDone = new Promise<void>((resolve) => {
         const timer = setInterval(() => {
-          const answer = full
+          const answer = cleanAnswer(full)
           if (!started && answer) {
             started = true
             setAiLoading(false) // swap the typing dots for the streaming bubble
@@ -318,24 +338,30 @@ export default function PortfolioCanvas() {
           }
         }, 20)
       })
-      await pump
 
-      // Fetch suggested follow-ups in a separate, reliable JSON call so a long
-      // answer can never crowd them out. They pop in once the answer has settled.
-      try {
-        const fr = await fetch('/api/ask', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode: 'followups', question: text, answer: finalAnswer }),
-        })
-        if (fr.ok) {
+      // Fetch follow-ups in parallel — kick off the moment the full answer is
+      // received (separate JSON call so a long answer can't crowd them out, and
+      // turn-aware so they taper toward gentle wind-down nudges as the chat
+      // deepens instead of forcing deep questions the context can't support).
+      const turn = conversationRef.current.filter(m => m.role === 'user').length
+      const followupsReady = pump.then(async () => {
+        try {
+          const fr = await fetch('/api/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: 'followups', question: text, answer: cleanAnswer(full).trim(), turn }),
+          })
+          if (!fr.ok) return [] as string[]
           const data = await fr.json()
-          const fu: string[] = Array.isArray(data.followups)
+          return Array.isArray(data.followups)
             ? data.followups.filter((x: unknown): x is string => typeof x === 'string').map(stripSym).filter(Boolean).slice(0, 3)
-            : []
-          if (fu.length) updateLastAi({ followups: fu })
-        }
-      } catch { /* no follow-ups is fine */ }
+            : ([] as string[])
+        } catch { return [] as string[] }
+      })
+
+      await revealDone
+      const fu = await followupsReady
+      if (fu.length) updateLastAi({ followups: fu })
     } catch {
       setAiMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Reach out to Dhairya directly on LinkedIn.', followups: [] }])
     } finally {
