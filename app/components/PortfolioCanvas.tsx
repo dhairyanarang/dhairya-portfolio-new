@@ -6,6 +6,21 @@ import Image from 'next/image'
 import { gsap } from 'gsap'
 import { Draggable } from 'gsap/Draggable'
 import { InertiaPlugin } from 'gsap/InertiaPlugin'
+import ReactMarkdown, { type Components } from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
+// Renders an AI reply's Markdown. External links open in a new tab; mailto/tel
+// stay in-page. Defined at module scope so it isn't recreated on every render.
+const aiMarkdownComponents: Components = {
+  a: ({ href, children }) => {
+    const external = !!href && /^https?:/i.test(href)
+    return (
+      <a href={href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+        {children}
+      </a>
+    )
+  },
+}
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 
@@ -867,6 +882,13 @@ export default function PortfolioCanvas() {
     if (aiMessagesRef.current) aiMessagesRef.current.scrollTop = aiMessagesRef.current.scrollHeight
   }, [aiMessages, aiLoading])
 
+  // While the chat is open, hide the canvas's custom green cursor and let the OS
+  // cursor show inside the panel (handled in globals.css via this body class).
+  useEffect(() => {
+    document.body.classList.toggle('ai-panel-open', aiOpen)
+    return () => document.body.classList.remove('ai-panel-open')
+  }, [aiOpen])
+
   // ── GP shuffle click ──────────────────────────────────────────────────────
   const handleGpShuffle = () => {
     const nextIdx = (gpStoryIdx + 1) % gpOrder.length
@@ -1230,8 +1252,17 @@ export default function PortfolioCanvas() {
           )}
           {aiMessages.map((msg, i) => (
             <div key={i} className={`ai-msg-row ${msg.role}`}>
-              <div className={`ai-bubble ${msg.role}`}>{msg.text}</div>
-              {msg.role === 'ai' && msg.followups && msg.followups.length > 0 && (
+              {msg.role === 'ai' ? (
+                <div className="ai-bubble ai ai-md">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={aiMarkdownComponents}>
+                    {msg.text}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <div className="ai-bubble user">{msg.text}</div>
+              )}
+              {/* Only the latest AI reply shows follow-ups (and only once it has settled). */}
+              {msg.role === 'ai' && i === aiMessages.length - 1 && !aiLoading && msg.followups && msg.followups.length > 0 && (
                 <div className="ai-followups">
                   {msg.followups.map(f => (
                     <button key={f} className="ai-chip ai-chip-followup" onClick={() => sendAiMessage(f)}>{f}</button>
@@ -1242,7 +1273,7 @@ export default function PortfolioCanvas() {
           ))}
           {aiLoading && (
             <div className="ai-msg-row ai">
-              <div className="ai-bubble ai" style={{ padding: '12px 16px' }}>
+              <div className="ai-bubble ai ai-bubble--typing" role="status" aria-label="Dhairya AI is typing">
                 <span className="ai-typing-dot" /><span className="ai-typing-dot" /><span className="ai-typing-dot" />
               </div>
             </div>

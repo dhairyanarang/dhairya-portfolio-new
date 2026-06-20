@@ -24,10 +24,17 @@ export async function POST(req: Request) {
   const history = (body.messages || []).slice(-12) // keep the last few turns only
 
   const system = `You are the friendly AI assistant on Dhairya Narang's portfolio website. ` +
-    `Answer a visitor's questions about Dhairya's work, skills, projects and experience using ONLY the context below. ` +
-    `Keep answers concise (2–4 short sentences), warm and specific. If something isn't covered in the context, say you're not sure and suggest reaching out to Dhairya on LinkedIn. ` +
+    `Answer a visitor's questions about Dhairya's work, skills, projects and experience using ONLY the context below. Be warm, specific and concise.\n\n` +
+    `FORMAT the "answer" as clean GitHub-flavoured Markdown so it reads well, not as one long block:\n` +
+    `- Open with a short one-line summary sentence.\n` +
+    `- When the answer has multiple parts, group them under short bold headings like **Experience** or **Tools** (use a couple of headings if it helps).\n` +
+    `- Use "- " bullet points for lists, and **bold** for key terms (names, roles, numbers).\n` +
+    `- Separate paragraphs/sections with a blank line. Keep it scannable and brief — avoid walls of text.\n` +
+    `- When it's useful (e.g. inviting the visitor to get in touch, or when the info isn't in the context), include Markdown links: ` +
+    `[LinkedIn](https://www.linkedin.com/in/dhairya-narang/), [email](mailto:dhairyanarang077@gmail.com), [Behance](https://www.behance.net/dhairyanarang36).\n` +
+    `If something isn't covered in the context, say you're not sure and point them to [LinkedIn](https://www.linkedin.com/in/dhairya-narang/) or [email](mailto:dhairyanarang077@gmail.com).\n\n` +
     `Respond as a JSON object with exactly two keys: ` +
-    `"answer" (string) and "followups" (an array of 2–3 short, natural follow-up questions a visitor might ask next, each under ~8 words).\n\n` +
+    `"answer" (the Markdown string) and "followups" (an array of 2–3 short, natural follow-up questions a visitor might ask next, each under ~8 words, plain text with NO leading arrows, dashes, bullets, numbers or other symbols).\n\n` +
     `CONTEXT:\n${context}`
 
   const messages = [
@@ -67,9 +74,18 @@ export async function POST(req: Request) {
       parsed = { answer: raw }
     }
 
+    const followups = Array.isArray(parsed.followups)
+      ? parsed.followups
+          .filter((f): f is string => typeof f === 'string')
+          // Strip any leading arrows / dashes / bullets / numbering the model adds.
+          .map((f) => f.replace(/^[\s>→➜•·\-–—*]+/, '').replace(/^\d+[.)]\s*/, '').trim())
+          .filter(Boolean)
+          .slice(0, 3)
+      : []
+
     return NextResponse.json({
       reply: parsed.answer?.trim() || "Sorry, I couldn't generate a response just now.",
-      followups: Array.isArray(parsed.followups) ? parsed.followups.filter(Boolean).slice(0, 3) : [],
+      followups,
     })
   } catch {
     return NextResponse.json({ error: 'AI request failed.' }, { status: 502 })
