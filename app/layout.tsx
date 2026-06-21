@@ -4,9 +4,9 @@ import Script from 'next/script'
 import './globals.css'
 import CustomCursor from './components/CustomCursor'
 
-// Microsoft Clarity (free analytics + session recordings). Dormant until the
-// project id is provided via NEXT_PUBLIC_CLARITY_ID (Vercel env var / .env.local).
-const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID
+// Microsoft Clarity project id (free analytics + session recordings). This id is
+// public — it ships in the client script — so it's fine to hardcode.
+const CLARITY_ID = 'xamtxthgrb'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
