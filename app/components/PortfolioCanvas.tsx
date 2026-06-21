@@ -1152,16 +1152,14 @@ export default function PortfolioCanvas() {
         <a id="contact-sticker" ref={contactRef} href="#" aria-label="Contact Dhairya"
            onMouseEnter={() => setCursorLabel("Let's Talk")}
            onMouseLeave={() => setCursorLabel('You')}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/contact-me-trigger2.png" alt="Contact Me" width={280} style={{ height: 'auto', display: 'block' }} />
+          <Image src="/contact-me-trigger2.png" alt="Contact Me" width={280} height={280} draggable={false} style={{ display: 'block', width: 280, height: 'auto' }} />
         </a>
 
         {/* Good Problems sticker */}
         <div id="good-problems-sticker" ref={gpStickerRef} role="button" tabIndex={0} aria-label="Good Problems"
              onMouseEnter={() => setCursorLabel('Good Problems')}
              onMouseLeave={() => setCursorLabel('You')}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/good-problems-trigger.png" alt="Good Problems" width={320} style={{ height: 'auto', display: 'block' }} />
+          <Image src="/good-problems-trigger.png" alt="Good Problems" width={320} height={320} draggable={false} style={{ display: 'block', width: 320, height: 'auto' }} />
         </div>
       </div>
 

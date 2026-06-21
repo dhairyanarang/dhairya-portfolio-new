@@ -113,7 +113,10 @@ body:has(.about-page) {
 }
 .about-hero-img {
   object-fit: cover;
-  object-position: center;
+  /* Subject sits on the RIGHT of this landscape photo; bias the cover-crop
+     toward him so narrow/tall viewports eat the empty wall on the left instead
+     of cutting into his face. */
+  object-position: 75% center;
   z-index: 0;
   /* Small base zoom so the scroll parallax (translate) never reveals an edge —
      kept low so the (landscape) photo is cropped as little as possible.
