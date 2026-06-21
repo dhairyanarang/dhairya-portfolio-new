@@ -536,6 +536,7 @@ export default function PortfolioCanvas() {
 
     const startGhostCursor = (wordEl: HTMLElement, homeCX: number, homeCY: number) => {
       gsap.killTweensOf(ghostCursor); clearTyping(); gsap.set(ghostCursor, { opacity: 0, clearProps: 'left,top,x,y' })
+      ghostCursor.classList.remove('flip-left')
       const gen = ++ghostGenRef.current
       const message = WITTY_MESSAGES[Math.floor(Math.random() * WITTY_MESSAGES.length)]
       const corners = getCorners()
@@ -566,6 +567,9 @@ export default function PortfolioCanvas() {
                   revertBorder(wordEl)
                   gsap.delayedCall(0.6, () => {
                     if (ghostGenRef.current !== gen) return
+                    // On phones, flip the pill to the cursor's left when it's in
+                    // the right half so the typed line stays fully on-screen.
+                    if (isMobileHome) ghostCursor.classList.toggle('flip-left', homeCX > window.innerWidth / 2)
                     typeMessage(message, () => {
                       gsap.delayedCall(1.5, () => {
                         if (ghostGenRef.current !== gen) return
