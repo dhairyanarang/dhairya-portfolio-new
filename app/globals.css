@@ -988,3 +988,44 @@ html, body {
   #mobile-menu-btn { display: flex; }
   #mobile-menu { display: flex; }
 }
+
+/* ── Mobile home: fixed single-screen composition (phones, ≤768px) ───────────
+   The canvas is laid out at viewport size (PortfolioCanvas sets its transform to
+   identity and skips panning at this width); the scattered desktop pieces are
+   repositioned to fit the phone. Hero words stay draggable (ghost interaction);
+   stickers/polaroid/deck stay tappable. Desktop (>768px) is fully unaffected. */
+@media (max-width: 768px) {
+  #canvas {
+    width: 100vw !important;
+    height: 100dvh !important;
+    touch-action: none !important; /* fixed screen; hero words handle their own drag */
+  }
+
+  /* Name — top-left */
+  #fixed-top-left { top: 16px; left: 16px; font-size: 13px; }
+
+  /* Hero words — centred on the viewport, sized for the phone */
+  .canvas-hero-line { font-size: 64px; letter-spacing: -1px; }
+  #canvas-hero-line-outline { -webkit-text-stroke-width: 1.5px; }
+
+  /* Tagline — just under the hero */
+  #hero-tagline { top: calc(50% + 84px); max-width: 290px; }
+  #hero-tagline-text { font-size: 15px; line-height: 1.35; }
+
+  /* GP sticker — upper-left */
+  #good-problems-sticker { left: 0; top: 58px; }
+  #good-problems-sticker img { width: 118px !important; }
+
+  /* Project deck — upper-right. The intro slides it via x, so scale with
+     !important (loses only the slide; opacity still fades in). */
+  #project-deck { left: auto; right: 6px; top: 50px; transform: scale(0.52) !important; transform-origin: top right; }
+
+  /* Polaroid — lower-left */
+  #polaroid { left: 8px; top: auto; bottom: 116px; padding: 8px; }
+  #polaroid-photo { width: 108px; height: 108px; }
+  #polaroid-caption { font-size: 12px; margin-top: 8px; }
+
+  /* Contact sticker — lower-right */
+  #contact-sticker { left: auto; right: 2px; top: auto; bottom: 122px; }
+  #contact-sticker img { width: 120px !important; }
+}

@@ -390,9 +390,14 @@ export default function PortfolioCanvas() {
     const ghostTooltip = ghostTooltipRef.current!
 
     // ── Canvas initial position ──
-    const centerOffsetX = -2000 + window.innerWidth / 2
-    const centerOffsetY = -2000 + window.innerHeight / 2 - 80
-    gsap.set(canvas, { x: centerOffsetX, y: centerOffsetY, scale: 0.85 })
+    // On phones the canvas is laid out as a fixed, viewport-sized screen (the
+    // mobile composition lives in globals.css under @media max-width:768px), so
+    // skip the scaled/offset transform and the panning there. Desktop is fully
+    // unchanged — every mobile branch below is gated on this flag.
+    const isMobileHome = window.matchMedia('(max-width: 768px)').matches
+    const centerOffsetX = isMobileHome ? 0 : -2000 + window.innerWidth / 2
+    const centerOffsetY = isMobileHome ? 0 : -2000 + window.innerHeight / 2 - 80
+    gsap.set(canvas, { x: centerOffsetX, y: centerOffsetY, scale: isMobileHome ? 1 : 0.85 })
     initialCanvasXRef.current = centerOffsetX
     initialCanvasYRef.current = centerOffsetY
 
@@ -418,7 +423,9 @@ export default function PortfolioCanvas() {
     // ── Canvas draggable ──
     let dragDistance = 0, dragStartX = 0, dragStartY = 0
 
-    Draggable.create(canvas, {
+    // Phones are a fixed screen: don't create the pan Draggable at all (so panel
+    // open/close can't re-enable it). The hero words stay draggable; stickers tap.
+    if (!isMobileHome) Draggable.create(canvas, {
       type: 'x,y',
       inertia: true,
       edgeResistance: 0.65,
@@ -449,14 +456,15 @@ export default function PortfolioCanvas() {
     // moves (needed for the pan), which also blocks the browser's pinch. When a
     // second finger lands we hand the gesture to the browser by disabling the
     // pan, then restore it once all fingers lift. Touch-only — never runs with a
-    // mouse, so desktop panning is untouched.
+    // mouse, so desktop panning is untouched. Skipped on phones (no panning to
+    // hand off, and onTouchEndRestore must not re-enable the disabled pan).
     const onCanvasMultiTouch = (e: TouchEvent) => {
       if (e.touches.length >= 2) Draggable.get(canvas)?.disable()
     }
     const onTouchEndRestore = (e: TouchEvent) => {
       if (e.touches.length === 0 && !panelIsOpenRef.current) Draggable.get(canvas)?.enable()
     }
-    if (isTouch) {
+    if (isTouch && !isMobileHome) {
       canvas.addEventListener('touchstart', onCanvasMultiTouch, { passive: true, capture: true })
       document.addEventListener('touchend', onTouchEndRestore, { passive: true })
     }
@@ -1221,8 +1229,8 @@ export default function PortfolioCanvas() {
         <div className="tool-icon" data-tip="Slack"><SlackIcon /></div>
         <div className="tool-divider" />
         <div className="tool-icon" data-tip="Claude"><ClaudeIcon /></div>
-        <div className="tool-icon" data-tip="Claude Code" style={{ background: '#0A0A0A', borderRadius: 6, padding: 3 }}>
-          <ClaudeIcon />
+        <div className="tool-icon" data-tip="Claude Code">
+          <Image src="/claude-code.png" alt="Claude Code" width={24} height={24} style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 6, display: 'block' }} />
         </div>
       </div>
       <div id="tool-tip" className="tool-tooltip" ref={toolTipRef} />
