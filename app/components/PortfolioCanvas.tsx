@@ -328,9 +328,9 @@ export default function PortfolioCanvas() {
             setAiMessages(prev => [...prev, { role: 'ai', text: '', followups: [] }])
           }
           if (started && shown < answer.length) {
-            // Steady typewriter pace: a few chars per tick (capped so a big
-            // buffered chunk doesn't dump all at once, and it eases off near the end).
-            shown += Math.max(2, Math.min(5, Math.ceil((answer.length - shown) / 60)))
+            // Brisk-but-visible typewriter: more chars per tick on a faster tick
+            // so long answers finish quickly, easing off near the end.
+            shown += Math.max(4, Math.min(10, Math.ceil((answer.length - shown) / 40)))
             if (shown > answer.length) shown = answer.length
             updateLastAi({ text: answer.slice(0, shown) })
           } else if (streamDone) {
@@ -338,7 +338,7 @@ export default function PortfolioCanvas() {
             finalize()
             resolve()
           }
-        }, 20)
+        }, 16)
       })
 
       // Fetch follow-ups in parallel — kick off the moment the full answer is
@@ -663,7 +663,8 @@ export default function PortfolioCanvas() {
       polaroid.addEventListener('mousedown',   e => e.stopPropagation())
       polaroid.addEventListener('pointerdown', e => e.stopPropagation())
       polaroid.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
-      Draggable.create(polaroid, {
+      // Phones: tap-only (no drag, so it can't be flung off-screen with no way back).
+      if (!isMobileHome) Draggable.create(polaroid, {
         type: 'x,y', inertia: true, minimumMovement: stickyMinMove,
         onPress() { polDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); polDragDist = 0; polStartX = this.x; polStartY = this.y; gsap.to(polaroid, { rotation: -3, duration: 0.2 }) },
@@ -702,7 +703,7 @@ export default function PortfolioCanvas() {
       deck.addEventListener('pointerdown', e => e.stopPropagation())
       deck.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
       let deckDragDist = 0, deckStartX = 0, deckStartY = 0
-      Draggable.create(deck, {
+      if (!isMobileHome) Draggable.create(deck, {
         type: 'x,y', inertia: true, minimumMovement: stickyMinMove,
         onPress() { deckDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); anyDragActiveRef.current = true; deckDragDist = 0; deckStartX = this.x; deckStartY = this.y; gsap.to(deck, { rotation: 3, duration: 0.2 }) },
@@ -722,7 +723,7 @@ export default function PortfolioCanvas() {
       c.addEventListener('mousedown',   e => e.stopPropagation())
       c.addEventListener('pointerdown', e => e.stopPropagation())
       c.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
-      Draggable.create(c, {
+      if (!isMobileHome) Draggable.create(c, {
         type: 'x,y', inertia: true, minimumMovement: stickyMinMove,
         onPress() { cDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); cDragDist = 0; cStartX = this.x; cStartY = this.y; gsap.to(c, { rotation: 5, duration: 0.2 }) },
@@ -742,7 +743,7 @@ export default function PortfolioCanvas() {
       gp.addEventListener('mousedown',   e => e.stopPropagation())
       gp.addEventListener('pointerdown', e => e.stopPropagation())
       gp.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false })
-      Draggable.create(gp, {
+      if (!isMobileHome) Draggable.create(gp, {
         type: 'x,y', inertia: true, minimumMovement: stickyMinMove,
         onPress() { gpDragDist = 0 },
         onDragStart() { Draggable.get(canvas)?.disable(); gpDragDist = 0; gpStartX = this.x; gpStartY = this.y; gsap.to(gp, { rotation: 2, duration: 0.2 }) },

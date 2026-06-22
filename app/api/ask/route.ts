@@ -83,7 +83,8 @@ export async function POST(req: Request) {
     `- Open with a short one-line summary sentence.\n` +
     `- When the answer has multiple parts, group them under short bold headings like **Experience** or **Tools** (use a couple of headings if it helps).\n` +
     `- Use "- " bullet points for lists, and **bold** for key terms (names, roles, numbers).\n` +
-    `- Separate paragraphs/sections with a blank line. Keep it scannable and brief (a few short sections at most) — avoid walls of text.\n` +
+    `- Keep it SHORT and punchy so it reads (and finishes) fast: usually 2–4 sentences, or 3–5 brief bullets max. Don't over-explain or pad — a quick, scannable reply is the goal.\n` +
+    `- Separate paragraphs/sections with a blank line; avoid walls of text.\n` +
     `- When it's useful (e.g. inviting the visitor to get in touch, or when the info isn't in the context), include Markdown links: ` +
     `[LinkedIn](https://www.linkedin.com/in/dhairya-narang/), [email](mailto:dhairyanarang077@gmail.com), [Behance](https://www.behance.net/dhairyanarang36).\n` +
     `If something isn't covered in the context, say you're not sure and point them to [LinkedIn](https://www.linkedin.com/in/dhairya-narang/) or [email](mailto:dhairyanarang077@gmail.com).\n\n` +
@@ -107,7 +108,7 @@ export async function POST(req: Request) {
         model: 'gpt-4o-mini',
         messages,
         temperature: 0.6,
-        max_tokens: 700,
+        max_tokens: 500,
         stream: true,
       }),
     })

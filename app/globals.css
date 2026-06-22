@@ -226,10 +226,10 @@ html, body {
   white-space: nowrap;
 }
 /* When the cursor sits in the right half of the screen, flip the pill to the
-   left of the cursor so the text doesn't run off-screen. The class is only
-   added on phones (see PortfolioCanvas), so desktop behaviour is unchanged. */
-#ghost-cursor.flip-left { align-items: flex-end; }
-#ghost-cursor.flip-left #ghost-cursor-pill { transform: translateX(calc(-100% + 16px)); }
+   LEFT of the cursor so the text doesn't run off-screen. The cursor/arrow stays
+   put (so it still points at the word) — only the pill shifts left. The class is
+   only added on phones (see PortfolioCanvas), so desktop behaviour is unchanged. */
+#ghost-cursor.flip-left #ghost-cursor-pill { transform: translateX(calc(-100% + 18px)); }
 
 /* Hero tagline */
 #hero-tagline {
@@ -1017,18 +1017,25 @@ html, body {
      Ask AI pill, even when Safari's URL bar shrinks the viewport. */
   #dhairya-anchor, #narang-anchor { top: 43%; }
 
-  /* Tagline — just under the hero */
-  #hero-tagline { top: calc(43% + 74px); max-width: 300px; }
-  #hero-tagline-text { font-size: 15px; line-height: 1.35; }
+  /* Tagline — just under the hero, with the decorative >< marks (as in the
+     design); keep the marks flanking the text on one row. */
+  #hero-tagline { top: calc(43% + 72px); max-width: 360px; flex-wrap: nowrap; gap: 10px; justify-content: center; }
+  #hero-tagline img { display: block; width: 13px; height: auto; flex-shrink: 0; opacity: 0.5; }
+  /* Fixed width + no shrink so the line breaks into 2 (as in the design) instead
+     of a narrow 3–4 line column. */
+  #hero-tagline-text { font-size: 15px; line-height: 1.35; width: 250px; flex-shrink: 0; text-align: center; }
 
   /* GP sticker — upper-left. Size the ELEMENT (not just the image) so it drops
      its wide desktop footprint and can't collide with neighbours. */
-  #good-problems-sticker { left: 4px; top: 7%; width: 142px; }
-  #good-problems-sticker img { width: 142px !important; }
+  #good-problems-sticker { left: 4px; top: 9%; width: 138px; }
+  #good-problems-sticker img { width: 138px !important; }
 
-  /* Project deck — upper-right. The intro slides it via x, so scale with
-     !important (loses only the slide; opacity still fades in). */
-  #project-deck { left: auto; right: 6px; top: 6%; transform: scale(0.6) !important; transform-origin: top right; }
+  /* Project deck — upper-right, below the hamburger and fully visible. The intro
+     slides it via x, so scale with !important (loses only the slide). */
+  #project-deck { left: auto; right: 6px; top: 10%; transform: scale(0.48) !important; transform-origin: top right; }
+  /* "SELECTED WORK" caption — hidden on mobile (it overlapped the hero); the
+     design doesn't show it either. */
+  .deck-label { display: none; }
 
   /* Polaroid — lower-left. % top so it scales with the visible height; it's on
      the left, clear of the Ask AI pill, so it can run lower. */
