@@ -148,7 +148,7 @@ export default function AboutContent() {
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="about-hero">
         <Image
-          src="/about/hero.jpg"
+          src="/About-hero.png"
           alt="Dhairya Narang"
           fill
           priority
