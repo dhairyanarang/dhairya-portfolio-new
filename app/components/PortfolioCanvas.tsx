@@ -413,6 +413,25 @@ export default function PortfolioCanvas() {
       btn.classList.toggle('visible', dist > 100)
     }
 
+    // ── Background dot grid ──
+    // The dots used to be painted across the whole 4000×4000 will-change canvas
+    // layer, so Chrome re-rasterized textured tiles on every pan (the lag). We
+    // render them on a small fixed element instead (cheap, painted once) and just
+    // shift its background-position to match the canvas transform, so it still
+    // scrolls with the pan exactly as before.
+    const grid = document.getElementById('canvas-grid')
+    const syncGrid = () => {
+      if (!grid) return
+      const gx = Number(gsap.getProperty(canvas, 'x'))
+      const gy = Number(gsap.getProperty(canvas, 'y'))
+      const sc = Number(gsap.getProperty(canvas, 'scaleX')) || canvasScaleRef.current
+      const off = 2000 * (1 - sc)            // scale happens around the canvas centre (2000,2000)
+      const size = 24 * sc
+      grid.style.backgroundSize = `${size}px ${size}px`
+      grid.style.backgroundPosition = `${gx + off}px ${gy + off}px`
+    }
+    syncGrid()
+
     // Touch/small-screen flag (mobile + tablet). Used to (a) give the scattered
     // canvas pieces a larger drag threshold so a TAP still fires its link/panel
     // while a real swipe still DRAGS, and (b) hand 2-finger gestures to the
@@ -441,9 +460,11 @@ export default function PortfolioCanvas() {
       onDrag() {
         dragDistance = Math.sqrt(Math.pow(this.x - dragStartX, 2) + Math.pow(this.y - dragStartY, 2))
         updateResetButton()
+        syncGrid()
         gsap.set(cursorArrow, { x: this.pointerX, y: this.pointerY })
         gsap.set(cursorTag,   { x: this.pointerX + 22, y: this.pointerY + 16 })
       },
+      onThrowUpdate() { syncGrid() },
       onDragEnd() {
         anyDragActiveRef.current = false
         updateResetButton()
@@ -469,13 +490,18 @@ export default function PortfolioCanvas() {
       document.addEventListener('touchend', onTouchEndRestore, { passive: true })
     }
 
-    // ── Cursor tracking ──
+    // ── Cursor tracking (throttled to one update per frame) ──
+    let cursorRaf = 0
     const handleMouseMove = (e: MouseEvent) => {
       if (anyDragActiveRef.current) return
       mouseXRef.current = e.clientX
       mouseYRef.current = e.clientY
-      gsap.set(cursorArrow, { x: e.clientX, y: e.clientY })
-      gsap.set(cursorTag,   { x: e.clientX + 22, y: e.clientY + 16 })
+      if (cursorRaf) return
+      cursorRaf = requestAnimationFrame(() => {
+        cursorRaf = 0
+        gsap.set(cursorArrow, { x: mouseXRef.current, y: mouseYRef.current })
+        gsap.set(cursorTag,   { x: mouseXRef.current + 22, y: mouseYRef.current + 16 })
+      })
     }
     document.addEventListener('mousemove', handleMouseMove)
 
@@ -878,11 +904,11 @@ export default function PortfolioCanvas() {
         if (ns === cs) return
         const cpx = (e.clientX - cx) / cs, cpy = (e.clientY - cy) / cs
         canvasScaleRef.current = ns
-        gsap.to(canvas, { x: e.clientX - cpx * ns, y: e.clientY - cpy * ns, scale: ns, duration: 0.3, ease: 'power2.out', onUpdate() { Draggable.get(canvas)?.update(); updateResetButton() } })
+        gsap.to(canvas, { x: e.clientX - cpx * ns, y: e.clientY - cpy * ns, scale: ns, duration: 0.3, ease: 'power2.out', onUpdate() { Draggable.get(canvas)?.update(); updateResetButton(); syncGrid() } })
       } else {
         const cx = Number(gsap.getProperty(canvas, 'x')), cy = Number(gsap.getProperty(canvas, 'y'))
         gsap.set(canvas, { x: cx - (e.deltaX || 0), y: cy - (e.deltaY || 0) })
-        Draggable.get(canvas)?.update(); updateResetButton()
+        Draggable.get(canvas)?.update(); updateResetButton(); syncGrid()
       }
     }
     document.addEventListener('wheel', handleWheel, { passive: false })
@@ -894,7 +920,8 @@ export default function PortfolioCanvas() {
         gsap.to(canvas, {
           x: initialCanvasXRef.current, y: initialCanvasYRef.current, scale: 0.85,
           duration: 0.8, ease: 'power3.out',
-          onComplete() { Draggable.get(canvas)?.update(); updateResetButton() }
+          onUpdate() { syncGrid() },
+          onComplete() { canvasScaleRef.current = 0.85; Draggable.get(canvas)?.update(); updateResetButton() }
         })
       })
     }
@@ -985,6 +1012,7 @@ export default function PortfolioCanvas() {
 
       document.removeEventListener('wheel', handleWheel)
       document.removeEventListener('mousemove', handleMouseMove)
+      if (cursorRaf) cancelAnimationFrame(cursorRaf)
       canvas.removeEventListener('touchstart', onCanvasMultiTouch, true)
       document.removeEventListener('touchend', onTouchEndRestore)
       if (overlayEl) overlayEl.removeEventListener('click', handleOverlayClick)
@@ -1059,6 +1087,11 @@ export default function PortfolioCanvas() {
   return (
     <>
       <div id="preloader" />
+
+      {/* Fixed dot grid behind the canvas — its background-position is synced to
+          the pan so it scrolls with the canvas, but it isn't painted across the
+          giant canvas layer (which was the Chrome pan lag). */}
+      <div id="canvas-grid" aria-hidden="true" />
 
       {/* ── Canvas ─────────────────────────────────────────────────────────── */}
       <div id="canvas" ref={canvasRef}>

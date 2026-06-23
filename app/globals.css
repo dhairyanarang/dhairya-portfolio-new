@@ -20,11 +20,23 @@ html, body {
   width: 4000px;
   height: 4000px;
   position: relative;
+  z-index: 1;
   touch-action: none;
   will-change: transform;
-  background-image: radial-gradient(circle, rgba(0,0,0,0.12) 1.5px, transparent 1.5px);
-  background-size: 24px 24px;
+  background: transparent;
+}
+/* Dot grid lives here (a small fixed element) instead of being painted across
+   the 4000×4000 canvas layer — that re-rasterization on every pan was the Chrome
+   lag. Its background-position is synced to the canvas transform in JS, so it
+   still scrolls with the pan. */
+#canvas-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background-color: #EDE8E0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.12) 1.5px, transparent 1.5px);
+  background-size: 20.4px 20.4px;
 }
 
 /* Hero anchors */
