@@ -8,7 +8,7 @@ import CustomCursor from './components/CustomCursor'
 // Microsoft Clarity (session recording) — re-enabled site-wide to evaluate it on
 // the home canvas now that the pan-lag GPU fix is in. Its id is public (ships in
 // the client script). If it makes the home feel janky in Chrome, remove this.
-const CLARITY_ID = 'xamtxthgrb'
+const CLARITY_ID = 'xbzd0yoa6p'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
