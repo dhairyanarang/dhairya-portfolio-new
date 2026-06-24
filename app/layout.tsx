@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk } from 'next/font/google'
+import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import CustomCursor from './components/CustomCursor'
 
-// Note: Microsoft Clarity (session recording) was removed — its DOM-mutation
-// recording fought the home canvas's constant GSAP transforms and caused visible
-// jank in Chrome. Vercel Analytics below is a lightweight page-view beacon with
-// no recording, so it doesn't touch performance.
+// Microsoft Clarity (session recording) — re-enabled site-wide to evaluate it on
+// the home canvas now that the pan-lag GPU fix is in. Its id is public (ships in
+// the client script). If it makes the home feel janky in Chrome, remove this.
+const CLARITY_ID = 'xamtxthgrb'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -47,6 +48,9 @@ export default function RootLayout({
         {children}
         <CustomCursor />
         <Analytics />
+        <Script id="ms-clarity" strategy="afterInteractive">
+          {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_ID}");`}
+        </Script>
       </body>
     </html>
   )
