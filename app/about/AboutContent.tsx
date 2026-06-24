@@ -40,6 +40,18 @@ export default function AboutContent() {
     return () => mq.removeEventListener('change', update)
   }, [])
 
+  // Warm the lanyard's code chunk + textures as soon as it's eligible to show, so
+  // it renders (and the card drops) the instant its section scrolls into view —
+  // removing the load delay between arriving and the drop.
+  useEffect(() => {
+    if (!showLanyard) return
+    import('@/app/components/Lanyard') // also runs useGLTF.preload(card.glb)
+    ;['/id-card-front.webp', '/id-card-back.webp', '/lanyard/strap1.webp'].forEach((src) => {
+      const im = new window.Image()
+      im.src = src
+    })
+  }, [showLanyard])
+
   useEffect(() => {
     if (!showLanyard) return
     const el = lanyardWrapRef.current
@@ -148,7 +160,7 @@ export default function AboutContent() {
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="about-hero">
         <Image
-          src="/About-hero.png"
+          src="/About-hero.webp"
           alt="Dhairya Narang"
           fill
           priority
@@ -222,8 +234,8 @@ export default function AboutContent() {
           <div className="about-lanyard" aria-hidden="true" ref={lanyardWrapRef}>
             {lanyardReady && (
               <Lanyard
-                frontImage="/id-card-front.png"
-                backImage="/id-card-back.png"
+                frontImage="/id-card-front.webp"
+                backImage="/id-card-back.webp"
                 position={[0, 0.5, 18]}
                 fov={20}
                 lanyardWidth={1}
@@ -237,7 +249,7 @@ export default function AboutContent() {
       {/* ── Gallery ───────────────────────────────────────────────────────── */}
       <section className="about-gallery reveal">
         <Image
-          src="/Footer-band-image.png"
+          src="/Footer-band-image.webp"
           alt="Dhairya outdoors"
           fill
           sizes="(max-width: 1100px) 100vw, 1312px"

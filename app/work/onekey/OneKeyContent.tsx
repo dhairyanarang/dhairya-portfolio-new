@@ -167,7 +167,7 @@ export default function OneKeyContent() {
         <div className="cs-hero-media reveal cs-hoverable" style={delay(0.24)}>
           <div className="cs-ph cs-ph--hero cs-ph--img">
             <Image
-              src="/work/onekey/hero.png"
+              src="/work/onekey/hero.webp"
               alt="OneKey — speak, structure, execute"
               fill
               priority
@@ -292,7 +292,7 @@ export default function OneKeyContent() {
                 {g.shots.map((shot) => (
                   <div className="cs-screen cs-hoverable" key={shot}>
                     <Image
-                      src={`/work/onekey/${shot}.png`}
+                      src={`/work/onekey/${shot}.webp`}
                       alt=""
                       aria-hidden="true"
                       width={g.w}

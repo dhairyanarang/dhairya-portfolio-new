@@ -198,7 +198,7 @@ export default function OnoContent() {
         <div className="cs-hero-media reveal cs-hoverable" style={delay(0.24)}>
           <div className="cs-ph cs-ph--hero cs-ph--img">
             <Image
-              src="/work/ono/hero.png"
+              src="/work/ono/hero.webp"
               alt="ONO — agri-commerce ecosystem case study"
               fill
               priority
@@ -304,7 +304,7 @@ export default function OnoContent() {
         <h3 className="cs-eyebrow reveal" style={{ marginTop: 56 }}>Inside mOS</h3>
         <div className="cs-diagram reveal" style={delay(0.06)}>
           <Image
-            src="/work/ono/mos-inside.png"
+            src="/work/ono/mos-inside.webp"
             alt="Inside mOS — annotated breakdown of the dashboard, product switcher, smartboard and profile"
             width={2240}
             height={2893}
@@ -334,7 +334,7 @@ export default function OnoContent() {
             {['nav-1', 'nav-2', 'nav-3', 'nav-4'].map((n) => (
               <div className="cs-screen cs-hoverable" key={n}>
                 <Image
-                  src={`/work/ono/${n}.png`}
+                  src={`/work/ono/${n}.webp`}
                   alt=""
                   aria-hidden="true"
                   width={457}
@@ -377,11 +377,11 @@ export default function OnoContent() {
         <h3 className="cs-eyebrow reveal" style={{ marginTop: 56 }}>Before &amp; After</h3>
         <div className="cs-ba reveal" style={delay(0.06)}>
           <div className="cs-ba-item cs-hoverable">
-            <Image src="/work/ono/before.png" alt="CASH — before the redesign" width={784} height={1085} sizes="(max-width: 1000px) 100vw, 560px" className="cs-screen-img" />
+            <Image src="/work/ono/before.webp" alt="CASH — before the redesign" width={784} height={1085} sizes="(max-width: 1000px) 100vw, 560px" className="cs-screen-img" />
             <span className="cs-ba-label">Before</span>
           </div>
           <div className="cs-ba-item cs-ba-item--after cs-hoverable">
-            <Image src="/work/ono/after.png" alt="CASH — after the redesign" width={784} height={1085} sizes="(max-width: 1000px) 100vw, 560px" className="cs-screen-img" />
+            <Image src="/work/ono/after.webp" alt="CASH — after the redesign" width={784} height={1085} sizes="(max-width: 1000px) 100vw, 560px" className="cs-screen-img" />
             <span className="cs-ba-label">After</span>
           </div>
         </div>
@@ -389,7 +389,7 @@ export default function OnoContent() {
         <h3 className="cs-eyebrow reveal" style={{ marginTop: 56 }}>Inside CASH</h3>
         <div className="cs-diagram reveal" style={delay(0.06)}>
           <Image
-            src="/work/ono/cash-inside.png"
+            src="/work/ono/cash-inside.webp"
             alt="Inside CASH — annotated breakdown of the smartboard, loans and applications screens"
             width={2240}
             height={4466}

@@ -191,7 +191,7 @@ export default function EraContent() {
         <div className="cs-hero-media reveal cs-hoverable" style={delay(0.24)}>
           <div className="cs-ph cs-ph--hero cs-ph--img">
             <Image
-              src="/work/luxury-fitness-app/hero.png"
+              src="/work/luxury-fitness-app/hero.webp"
               alt="ERA fitness app — track, compete, progress"
               fill
               priority
@@ -260,7 +260,7 @@ export default function EraContent() {
               <div className="cs-compare-ref">
                 <span className="cs-logo">
                   <Image
-                    src={`/work/luxury-fitness-app/${r.logo}.png`}
+                    src={`/work/luxury-fitness-app/${r.logo}.webp`}
                     alt={`${r.name} app icon`}
                     width={44}
                     height={44}
@@ -345,7 +345,7 @@ export default function EraContent() {
                 {g.shots.map((shot) => (
                   <div className="cs-screen cs-hoverable" key={shot}>
                     <Image
-                      src={`/work/luxury-fitness-app/${shot}.png`}
+                      src={`/work/luxury-fitness-app/${shot}.webp`}
                       alt=""
                       aria-hidden="true"
                       width={660}

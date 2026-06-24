@@ -1129,7 +1129,7 @@ export default function PortfolioCanvas() {
         <a id="polaroid" ref={polaroidRef} href="/about" aria-label="About Me"
            onMouseEnter={() => setCursorLabel('My Story')}
            onMouseLeave={() => setCursorLabel('You')}>
-          <Image id="polaroid-photo" src="/dhairya-photo.png" alt="Dhairya Narang" width={220} height={220} style={{ borderRadius: 2, display: 'block', objectFit: 'cover' }} />
+          <Image id="polaroid-photo" src="/dhairya-photo.webp" alt="Dhairya Narang" width={220} height={220} style={{ borderRadius: 2, display: 'block', objectFit: 'cover' }} />
           <div id="polaroid-caption">About me <span className="polaroid-arrow">→</span></div>
         </a>
 
@@ -1140,7 +1140,7 @@ export default function PortfolioCanvas() {
           <div className="deck-wrapper">
             <div className="project-card" id="deck-card-4" ref={deckCard4Ref as React.RefObject<HTMLDivElement>}>
               <div className="card-image">
-                <Image src="/OneKey-thumbnail.png" alt="ONO" fill style={{ objectFit: 'cover' }} />
+                <Image src="/OneKey-thumbnail.webp" alt="ONO" fill style={{ objectFit: 'cover' }} />
                 <div className="card-tag-pill">Earlier Work</div>
               </div>
               <div className="card-content">
@@ -1153,7 +1153,7 @@ export default function PortfolioCanvas() {
             </div>
             <div className="project-card" id="deck-card-3" ref={deckCard3Ref as React.RefObject<HTMLDivElement>}>
               <div className="card-image">
-                <Image src="/OneKey-thumbnail.png" alt="MyRoom" fill style={{ objectFit: 'cover' }} />
+                <Image src="/OneKey-thumbnail.webp" alt="MyRoom" fill style={{ objectFit: 'cover' }} />
                 <div className="card-tag-pill">Concept</div>
               </div>
               <div className="card-content">
@@ -1166,7 +1166,7 @@ export default function PortfolioCanvas() {
             </div>
             <div className="project-card" id="deck-card-2" ref={deckCard2Ref as React.RefObject<HTMLDivElement>}>
               <div className="card-image">
-                <Image src="/OneKey-thumbnail.png" alt="Luxury Fitness App" fill style={{ objectFit: 'cover' }} />
+                <Image src="/OneKey-thumbnail.webp" alt="Luxury Fitness App" fill style={{ objectFit: 'cover' }} />
                 <div className="card-tag-pill"><div className="card-tag-gray-dot" />Delivered</div>
               </div>
               <div className="card-content">
@@ -1179,7 +1179,7 @@ export default function PortfolioCanvas() {
             </div>
             <a className="project-card" id="deck-card-1" ref={deckCard1Ref} href="/work" aria-label="View Work">
               <div className="card-image">
-                <Image src="/OneKey-thumbnail.png" alt="OneKey" fill style={{ objectFit: 'cover' }} />
+                <Image src="/OneKey-thumbnail.webp" alt="OneKey" fill style={{ objectFit: 'cover' }} />
                 <div className="card-tag-pill"><div className="card-tag-live-dot" />Live App</div>
               </div>
               <div className="card-content">
@@ -1198,14 +1198,14 @@ export default function PortfolioCanvas() {
         <a id="contact-sticker" ref={contactRef} href="#" aria-label="Contact Dhairya"
            onMouseEnter={() => setCursorLabel("Let's Talk")}
            onMouseLeave={() => setCursorLabel('You')}>
-          <Image src="/contact-me-trigger2.png" alt="Contact Me" width={280} height={280} draggable={false} style={{ display: 'block', width: 280, height: 'auto' }} />
+          <Image src="/contact-me-trigger2.webp" alt="Contact Me" width={280} height={280} draggable={false} style={{ display: 'block', width: 280, height: 'auto' }} />
         </a>
 
         {/* Good Problems sticker */}
         <div id="good-problems-sticker" ref={gpStickerRef} role="button" tabIndex={0} aria-label="Good Problems"
              onMouseEnter={() => setCursorLabel('Good Problems')}
              onMouseLeave={() => setCursorLabel('You')}>
-          <Image src="/good-problems-trigger.png" alt="Good Problems" width={320} height={320} draggable={false} style={{ display: 'block', width: 320, height: 'auto' }} />
+          <Image src="/good-problems-trigger.webp" alt="Good Problems" width={320} height={320} draggable={false} style={{ display: 'block', width: 320, height: 'auto' }} />
         </div>
       </div>
 
@@ -1268,7 +1268,7 @@ export default function PortfolioCanvas() {
         <div className="tool-divider" />
         <div className="tool-icon" data-tip="Claude"><ClaudeIcon /></div>
         <div className="tool-icon" data-tip="Claude Code">
-          <Image src="/claude-code.png" alt="Claude Code" width={24} height={24} style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 6, display: 'block' }} />
+          <Image src="/claude-code.webp" alt="Claude Code" width={24} height={24} style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 6, display: 'block' }} />
         </div>
       </div>
       <div id="tool-tip" className="tool-tooltip" ref={toolTipRef} />

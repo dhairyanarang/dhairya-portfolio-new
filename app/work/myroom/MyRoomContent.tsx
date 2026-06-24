@@ -165,7 +165,7 @@ export default function MyRoomContent() {
         <div className="cs-hero-media reveal cs-hoverable" style={delay(0.24)}>
           <div className="cs-ph cs-ph--hero cs-ph--img">
             <Image
-              src="/work/myroom/hero.png"
+              src="/work/myroom/hero.webp"
               alt="MyRoom — trust-first accommodation case study"
               fill
               priority
@@ -273,7 +273,7 @@ export default function MyRoomContent() {
               <div className="cs-compare-ref">
                 <span className="cs-logo">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="cs-logo-img" src={`/work/myroom/${m.logo}.png`} alt={`${m.name} logo`} width={44} height={44} />
+                  <img className="cs-logo-img" src={`/work/myroom/${m.logo}.webp`} alt={`${m.name} logo`} width={44} height={44} />
                 </span>
                 <span className="cs-compare-name">{m.name}</span>
               </div>
@@ -338,7 +338,7 @@ export default function MyRoomContent() {
               {COMPARE_SHOTS.map((shot) => (
                 <div className="cs-screen cs-hoverable" key={shot}>
                   <Image
-                    src={`/work/myroom/${shot}.png`}
+                    src={`/work/myroom/${shot}.webp`}
                     alt=""
                     aria-hidden="true"
                     width={680}
@@ -363,7 +363,7 @@ export default function MyRoomContent() {
               with a little more breathing room above it. */}
           <div className="cs-diagram reveal" style={{ marginTop: 72, ...delay(0.1) }}>
             <Image
-              src="/work/myroom/myroom-pdp.png"
+              src="/work/myroom/myroom-pdp.webp"
               alt="MyRoom product detail page — annotated virtual property tour"
               width={1680}
               height={7265}

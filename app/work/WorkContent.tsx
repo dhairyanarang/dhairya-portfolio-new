@@ -7,10 +7,10 @@ import './work.css'
 
 // Each card links to a live case study. `thumb` is the case study's hero image.
 const PROJECTS: { title: string; desc: string; href?: string; thumb?: string }[] = [
-  { title: 'Luxury Fitness App', desc: 'A premium iOS & Android strength-training experience designed end-to-end in a 2-week sprint — balancing luxury aesthetics with movement-first workout usability.', href: '/work/luxury-fitness-app', thumb: '/work/luxury-fitness-app/hero.png' },
-  { title: 'OneKey — AI Second Brain', desc: 'An AI-native, voice-first productivity product I designed end-to-end from 0→1, built to make capturing and structuring ideas feel invisible. Currently in internal beta.', href: '/work/onekey', thumb: '/work/onekey/hero.png' },
-  { title: 'ONO — Agri-commerce Ecosystem', desc: 'Connected experiences across an agri-tech B2B SaaS ecosystem — unifying ONO’s mOS and CASH products into one approachable, discoverable platform over an 8-month embedded role.', href: '/work/ono', thumb: '/work/ono/hero.png' },
-  { title: 'MyRoom — Trust-first Accommodation', desc: 'A research-driven consumer product that turns user psychology into a transparent, commute-first accommodation experience for people moving to new cities.', href: '/work/myroom', thumb: '/work/myroom/hero.png' },
+  { title: 'Luxury Fitness App', desc: 'A premium iOS & Android strength-training experience designed end-to-end in a 2-week sprint — balancing luxury aesthetics with movement-first workout usability.', href: '/work/luxury-fitness-app', thumb: '/work/luxury-fitness-app/hero.webp' },
+  { title: 'OneKey — AI Second Brain', desc: 'An AI-native, voice-first productivity product I designed end-to-end from 0→1, built to make capturing and structuring ideas feel invisible. Currently in internal beta.', href: '/work/onekey', thumb: '/work/onekey/hero.webp' },
+  { title: 'ONO — Agri-commerce Ecosystem', desc: 'Connected experiences across an agri-tech B2B SaaS ecosystem — unifying ONO’s mOS and CASH products into one approachable, discoverable platform over an 8-month embedded role.', href: '/work/ono', thumb: '/work/ono/hero.webp' },
+  { title: 'MyRoom — Trust-first Accommodation', desc: 'A research-driven consumer product that turns user psychology into a transparent, commute-first accommodation experience for people moving to new cities.', href: '/work/myroom', thumb: '/work/myroom/hero.webp' },
 ]
 
 export default function WorkContent() {
