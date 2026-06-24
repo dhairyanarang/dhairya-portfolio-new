@@ -217,6 +217,12 @@ function Band({
   const clientPt = useRef({ x: -1, y: -1 })
   const pointerNDC = useRef(new THREE.Vector2(2, 2)) // start off-screen
   const rectRef = useRef<DOMRect | null>(null)
+  // Touch: the selective pointer-events below is hover-based, and touch has no
+  // hover — so a deliberate double-tap on the card "arms" it, keeping the canvas
+  // interactive long enough to then touch-drag it. Mouse is unaffected (no touch
+  // events fire), so desktop behaviour is unchanged.
+  const armedRef = useRef(false)
+  const disarmTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
       clientPt.current.x = e.clientX
@@ -241,6 +247,45 @@ function Band({
       window.removeEventListener('resize', update)
     }
   }, [gl])
+
+  // Double-tap over the card arms touch-drag for a few seconds (then you drag).
+  useEffect(() => {
+    let lastTap = 0, lastX = 0, lastY = 0
+    let downT = 0, downX = 0, downY = 0
+    const inRect = (x: number, y: number) => {
+      const r = rectRef.current
+      return !!r && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom
+    }
+    const onStart = (e: TouchEvent) => {
+      const t = e.touches[0]
+      if (t) { downT = Date.now(); downX = t.clientX; downY = t.clientY }
+    }
+    const onEnd = (e: TouchEvent) => {
+      const t = e.changedTouches[0]
+      if (!t) return
+      const quickTap = Date.now() - downT < 260 && Math.hypot(t.clientX - downX, t.clientY - downY) < 22
+      if (!quickTap || !inRect(t.clientX, t.clientY)) { lastTap = 0; return }
+      const now = Date.now()
+      if (now - lastTap < 350 && Math.hypot(t.clientX - lastX, t.clientY - lastY) < 44) {
+        // Armed: keep the canvas interactive (see useFrame) so the next touch can drag.
+        armedRef.current = true
+        clientPt.current.x = t.clientX; clientPt.current.y = t.clientY
+        if (disarmTimer.current) clearTimeout(disarmTimer.current)
+        disarmTimer.current = setTimeout(() => { armedRef.current = false }, 5000)
+        e.preventDefault() // suppress any double-tap zoom
+        lastTap = 0
+      } else {
+        lastTap = now; lastX = t.clientX; lastY = t.clientY
+      }
+    }
+    window.addEventListener('touchstart', onStart, { passive: true })
+    window.addEventListener('touchend', onEnd, { passive: false })
+    return () => {
+      window.removeEventListener('touchstart', onStart)
+      window.removeEventListener('touchend', onEnd)
+      if (disarmTimer.current) clearTimeout(disarmTimer.current)
+    }
+  }, [])
 
   useFrame((state, delta) => {
     if (dragged && typeof dragged !== 'boolean') {
@@ -287,7 +332,7 @@ function Band({
     // Selective pointer-events: capture only over the card (or while dragging).
     const el = state.gl.domElement
     let want: 'auto' | 'none' = 'none'
-    if (dragged) {
+    if (dragged || armedRef.current) {
       want = 'auto'
     } else if (cardVisual.current && rectRef.current) {
       const rect = rectRef.current
@@ -349,6 +394,8 @@ function Band({
             onPointerUp={(e: any) => {
               e.target.releasePointerCapture(e.pointerId)
               drag(false)
+              armedRef.current = false
+              if (disarmTimer.current) clearTimeout(disarmTimer.current)
             }}
             onPointerDown={(e: any) => {
               e.target.setPointerCapture(e.pointerId)
