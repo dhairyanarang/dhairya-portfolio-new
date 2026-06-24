@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk } from 'next/font/google'
-import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import CustomCursor from './components/CustomCursor'
+import Clarity from './components/Clarity'
 
-// Microsoft Clarity (session recording) — re-enabled site-wide to evaluate it on
-// the home canvas now that the pan-lag GPU fix is in. Its id is public (ships in
-// the client script). If it makes the home feel janky in Chrome, remove this.
+// Microsoft Clarity (session recording). Its id is public (ships in the client
+// script). The <Clarity> component skips localhost/dev, so only real visitors
+// are recorded.
 const CLARITY_ID = 'xbzd0yoa6p'
 
 const spaceGrotesk = Space_Grotesk({
@@ -48,9 +48,7 @@ export default function RootLayout({
         {children}
         <CustomCursor />
         <Analytics />
-        <Script id="ms-clarity" strategy="afterInteractive">
-          {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_ID}");`}
-        </Script>
+        <Clarity id={CLARITY_ID} />
       </body>
     </html>
   )

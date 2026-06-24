@@ -253,8 +253,8 @@ function Band({
     let lastTap = 0, lastX = 0, lastY = 0
     let downT = 0, downX = 0, downY = 0
     const inRect = (x: number, y: number) => {
-      const r = rectRef.current
-      return !!r && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom
+      const r = gl.domElement.getBoundingClientRect()  // fresh — never stale
+      return r.width > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom
     }
     const onStart = (e: TouchEvent) => {
       const t = e.touches[0]
@@ -263,10 +263,10 @@ function Band({
     const onEnd = (e: TouchEvent) => {
       const t = e.changedTouches[0]
       if (!t) return
-      const quickTap = Date.now() - downT < 260 && Math.hypot(t.clientX - downX, t.clientY - downY) < 22
+      const quickTap = Date.now() - downT < 350 && Math.hypot(t.clientX - downX, t.clientY - downY) < 30
       if (!quickTap || !inRect(t.clientX, t.clientY)) { lastTap = 0; return }
       const now = Date.now()
-      if (now - lastTap < 350 && Math.hypot(t.clientX - lastX, t.clientY - lastY) < 44) {
+      if (now - lastTap < 450 && Math.hypot(t.clientX - lastX, t.clientY - lastY) < 60) {
         // Armed: keep the canvas interactive (see useFrame) so the next touch can drag.
         armedRef.current = true
         clientPt.current.x = t.clientX; clientPt.current.y = t.clientY
@@ -346,6 +346,10 @@ function Band({
       }
     }
     if (el.style.pointerEvents !== want) el.style.pointerEvents = want
+    // While armed for a touch-drag, stop the browser from treating the drag as a
+    // scroll (otherwise the page scrolls and the card never moves).
+    const ta = armedRef.current ? 'none' : ''
+    if (el.style.touchAction !== ta) el.style.touchAction = ta
   })
 
   curve.curveType = 'chordal'
