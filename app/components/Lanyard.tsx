@@ -243,6 +243,10 @@ function Band({
   }, [gl])
 
   useFrame((state, delta) => {
+    // When the tab is backgrounded the render loop pauses; on return the first
+    // frame's delta is huge, which made the sway impulse + band lerp fling the
+    // card violently. Cap it so the motion stays gentle.
+    delta = Math.min(delta, 1 / 30)
     if (dragged && typeof dragged !== 'boolean') {
       vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera)
       dir.copy(vec).sub(state.camera.position).normalize()

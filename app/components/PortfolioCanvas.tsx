@@ -395,9 +395,15 @@ export default function PortfolioCanvas() {
     // skip the scaled/offset transform and the panning there. Desktop is fully
     // unchanged — every mobile branch below is gated on this flag.
     const isMobileHome = window.matchMedia('(max-width: 768px)').matches
+    // Small / short laptops (e.g. 13" HP) make the 0.85 canvas feel too zoomed-in;
+    // scale it down a touch so more of the composition fits. Larger screens (15"
+    // MacBook etc.) keep 0.85 unchanged.
+    const smallScreen = !isMobileHome && (window.innerHeight < 900 || window.innerWidth < 1400)
+    const baseScale = isMobileHome ? 1 : smallScreen ? 0.7 : 0.85
     const centerOffsetX = isMobileHome ? 0 : -2000 + window.innerWidth / 2
     const centerOffsetY = isMobileHome ? 0 : -2000 + window.innerHeight / 2 - 80
-    gsap.set(canvas, { x: centerOffsetX, y: centerOffsetY, scale: isMobileHome ? 1 : 0.85 })
+    gsap.set(canvas, { x: centerOffsetX, y: centerOffsetY, scale: baseScale })
+    canvasScaleRef.current = baseScale
     initialCanvasXRef.current = centerOffsetX
     initialCanvasYRef.current = centerOffsetY
 
@@ -918,10 +924,10 @@ export default function PortfolioCanvas() {
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
         gsap.to(canvas, {
-          x: initialCanvasXRef.current, y: initialCanvasYRef.current, scale: 0.85,
+          x: initialCanvasXRef.current, y: initialCanvasYRef.current, scale: baseScale,
           duration: 0.8, ease: 'power3.out',
           onUpdate() { syncGrid() },
-          onComplete() { canvasScaleRef.current = 0.85; Draggable.get(canvas)?.update(); updateResetButton() }
+          onComplete() { canvasScaleRef.current = baseScale; Draggable.get(canvas)?.update(); updateResetButton() }
         })
       })
     }
@@ -1315,21 +1321,26 @@ export default function PortfolioCanvas() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/close.svg" alt="Close" width={18} height={18} />
         </button>
-        <div className="gp-eyebrow">Good Problems</div>
-        <div className="gp-title">Problems worth admiring.</div>
-        <div className="gp-intro">I&apos;m fascinated by problems that were solved in ways nobody expected. Not interface problems — real world ones. The kind that reveal something true about how people think and behave.</div>
-        <hr className="gp-divider" />
-        <div id="gp-story" ref={gpStoryRef}>
-          {currentStory && (
-            <>
-              <div className="gp-story-label">The problem</div>
-              <div className="gp-story-text">{currentStory.problem}</div>
-              <div className="gp-story-label">The solution</div>
-              <div className="gp-story-text">{currentStory.solution}</div>
-              <div className="gp-story-label">Why it worked</div>
-              <div className="gp-story-text" style={{ marginBottom: 0 }}>{currentStory.why}</div>
-            </>
-          )}
+        {/* Scrollable content — keeps the close button (absolute) and the footer
+            CTA out of the scroll so "Another one" stays pinned + visible even on
+            short laptop screens where the story would otherwise push it off-fold. */}
+        <div id="gp-scroll">
+          <div className="gp-eyebrow">Good Problems</div>
+          <div className="gp-title">Problems worth admiring.</div>
+          <div className="gp-intro">I&apos;m fascinated by problems that were solved in ways nobody expected. Not interface problems — real world ones. The kind that reveal something true about how people think and behave.</div>
+          <hr className="gp-divider" />
+          <div id="gp-story" ref={gpStoryRef}>
+            {currentStory && (
+              <>
+                <div className="gp-story-label">The problem</div>
+                <div className="gp-story-text">{currentStory.problem}</div>
+                <div className="gp-story-label">The solution</div>
+                <div className="gp-story-text">{currentStory.solution}</div>
+                <div className="gp-story-label">Why it worked</div>
+                <div className="gp-story-text" style={{ marginBottom: 0 }}>{currentStory.why}</div>
+              </>
+            )}
+          </div>
         </div>
         <div className="gp-footer">
           <hr className="gp-divider" />

@@ -355,6 +355,18 @@ body:has(.about-page) {
 .about-contact-item:hover { color: #0a0a0a; }
 .about-contact-item img { display: block; flex-shrink: 0; width: 24px; height: 24px; }
 
+/* Small laptops (13–14", e.g. HP Pavilion): the fixed 1280 rail nearly fills the
+   viewport, so the story copy ends up hugging the left edge with almost no side
+   breathing room. Narrow the shared rail to ~90vw across this range so the story —
+   and the gallery/footer below it, keeping the left edges aligned — regain the
+   comfortable side margins the layout has on 15"+ screens. 90vw ≈ 1280 at 1440px,
+   so this is continuous with the default and changes nothing for wider displays. */
+@media (min-width: 1201px) and (max-width: 1440px) {
+  .about-main,
+  .about-footer { max-width: min(1280px, 90vw); }
+  .about-gallery { max-width: min(1232px, calc(90vw - 48px)); }
+}
+
 /* ── Responsive fallback (the design is desktop-first) ─────────────────────────
    Breakpoint at 1200 matches the lanyard cutoff in AboutContent: at/below this
    the interactive ID card is not rendered at all (no static fallback), so the

@@ -633,12 +633,21 @@ html, body {
   border-left: 1px solid rgba(0,0,0,0.08);
   box-shadow: -8px 0 32px rgba(0,0,0,0.08);
   z-index: 1000;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 40px 36px;
   transform: translateX(100%);
-  /* column layout lets .gp-footer (the "Another one" CTA) sit at the bottom */
+  /* column layout: #gp-scroll takes the free space (and scrolls if the story is
+     long), while .gp-footer (the "Another one" CTA) stays pinned + visible. */
   display: flex;
   flex-direction: column;
+}
+/* The only scrolling region of the panel — keeps the footer CTA on-screen even on
+   short laptops where a long story would push it below the fold. */
+#gp-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 /* Close button — matches the Ask AI panel's icon button exactly. */
 #gp-close {
@@ -662,12 +671,11 @@ html, body {
 #gp-story { margin-bottom: 32px; }
 .gp-story-label { font-family: var(--font-space-grotesk), sans-serif; font-size: 10px; font-weight: 600; color: #E8462A; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
 .gp-story-text { font-family: var(--font-space-grotesk), sans-serif; font-size: 15px; font-weight: 400; color: #0A0A0A; line-height: 1.65; margin-bottom: 20px; }
-/* Footer holds the divider + "Another one" CTA pinned to the bottom of the panel
-   (margin-top:auto eats the free space when the story is short; it scrolls with
-   the content when the story is long). The panel's 40px bottom padding keeps the
-   button clear of the bottom edge. */
+/* Footer holds the divider + "Another one" CTA. It sits below the scroll region
+   (#gp-scroll) so it's always pinned + visible; the panel's 40px bottom padding
+   keeps the button clear of the bottom edge. */
 .gp-footer {
-  margin-top: auto;
+  flex-shrink: 0;
   /* offset the last story block's spacing so the gap above the divider is even */
   padding-top: 12px;
 }
